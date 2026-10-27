@@ -205,7 +205,8 @@ function viewM1(){
 // Contenido de una nota: primero quién (nombre e institución), luego el texto recortado con "Ver más" si es largo.
 const LONG=140;
 const noteBody=c=>`${c.n?`<div style="font-weight:800">${esc(c.n)}</div>`:""}<small style="margin:0 0 8px">${esc(c.i)}</small><div class="txt">${esc(c.t)}</div>${c.t.length>LONG?`<button class="more" onclick="openNote('${c.id}')">Ver más</button>`:""}`;
-const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${noteBody(c)}${S.step==2?`<span class="vote">⭐ ${c.v||0}</span>`:""}</div>`;
+// En el Momento 1 la tarjeta completa abre el modal con el aporte; en el 2 se arrastra.
+const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" ${S.step==1?`onclick="openNote('${c.id}')" title="Clic para ver completo"`:""} style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]};${S.step==1?"cursor:pointer":""}">${noteBody(c)}${S.step==2?`<span class="vote">⭐ ${c.v||0}</span>`:""}</div>`;
 function openNote(id){const c=S.cards.find(c=>c.id==id)||DATA.inbox.find(c=>c.id==id);if(!c)return;
   $("okm").innerHTML=`<div class="panel" style="max-width:680px;width:100%;max-height:90vh;overflow:auto;border-top:10px solid ${NOTE_COLORS[INST.indexOf(c.i)%9]}" onclick="event.stopPropagation()">
   <h2 style="margin-bottom:0">${esc(c.n)||"Aporte"}</h2><span class="chip">${esc(c.i)}</span>
