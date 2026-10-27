@@ -20,7 +20,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 28px;position:sticky;top:0;
 nav button{border:0;border-radius:999px;padding:9px 16px;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer;background:#ece8ff;color:var(--prim);transition:.2s}
 nav button:hover{transform:translateY(-2px)}
 nav button.on{background:linear-gradient(115deg,var(--prim),var(--rosa));color:#fff;transform:scale(1.07);box-shadow:0 6px 16px #6c3cff55}
-#clock{position:fixed;right:16px;bottom:16px;z-index:9;background:var(--noche);color:#fff;border-radius:22px;padding:12px 16px;box-shadow:0 10px 28px #1d155077;min-width:220px;text-align:center}
+#clock{position:fixed;right:16px;bottom:16px;z-index:60;/* por encima de los modales (z 30-40) y del aviso de fin de tiempo (z 20) */background:var(--noche);color:#fff;border-radius:22px;padding:12px 16px;box-shadow:0 10px 28px #1d155077;min-width:220px;text-align:center}
 #clock.low{background:var(--coral);animation:pulse 1s infinite}
 @keyframes pulse{50%{transform:scale(1.06)}}
 #tm{font:800 46px ui-monospace,monospace;display:block;color:var(--sol)}#clock.low #tm{color:#fff}
