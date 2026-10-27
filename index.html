@@ -61,19 +61,26 @@ const GROUPS=[{n:"Grupo Origen",c:"#c8432b"},{n:"Grupo Cosecha",c:"#2f6f4e"},{n:
 const STEPS=[{t:"👥 Grupos"},{t:"1 · Identificar"},{t:"2 · Agrupar"},{t:"3 · Diseñar"},{t:"4 · Validar"}];
 const NOTE_COLORS=["#ffe08a","#b8e6c1","#ffc2b0","#bcd9f5","#e3c6f2","#ffd3a8","#c9f0e8","#f6e0a4","#d4e8a8"];
 const KEY="ruta2027";
+const PHONE=location.search.includes("celular");
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||{step:0,people:[],groups:[],cards:[],actions:[]};
 let left=0,tick=null,total=0;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // URL de la app web de Apps Script (ver Code.gs). Vacío = solo funciona en este navegador.
-const SHEET_URL="https://script.google.com/macros/s/AKfycbx9qNXof7cOCfGR-jrdehNVffyjmq7wWe1SzXEYSrrApSLBzskPNLlNVz1S_f2xPBD2/exec";
+const PHONE_URL=location.origin+location.pathname+"?celular";
+const SHEET_URL="https://script.google.com/macros/s/AKfycbzN8MsoFYEBNd31jCp1ol0HVd_ahASctc_HYr6YadPaaOMK5kdFGV-r3g7Cqn2bwt30/exec";
 let pushT;
 const save=()=>{S.ts=Date.now();localStorage.setItem(KEY,JSON.stringify(S));render();
   if(SHEET_URL){clearTimeout(pushT);pushT=setTimeout(()=>fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(S)}).catch(()=>{}),600)}};
 // Cada 5 s trae el estado de la hoja; no repinta si alguien está escribiendo.
-if(SHEET_URL)setInterval(async()=>{try{
-  const r=await(await fetch(SHEET_URL)).json();
-  if(r.ts>(S.ts||0)&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){S=r;localStorage.setItem(KEY,JSON.stringify(S));render()}
+// Cada 5 s trae el estado de la hoja y las notas enviadas desde celulares (bandeja "inbox"); no repinta si alguien está escribiendo.
+if(SHEET_URL&&!PHONE)setInterval(async()=>{try{
+  const r=await(await fetch(SHEET_URL)).json(),inbox=r.inbox||[];delete r.inbox;
+  const idle=!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if(!idle)return;
+  if(r.ts>(S.ts||0)){S=r;localStorage.setItem(KEY,JSON.stringify(S));render()}
+  const add=inbox.filter(e=>!S.cards.some(c=>c.id==e.id));
+  if(add.length){S.cards.push(...add.map(e=>({id:e.id,t:e.t,i:e.i,n:e.n,line:null,v:0})));save()}
 }catch(e){}},5000);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const instOpts=()=>INST.map(i=>`<option>${esc(i)}</option>`).join("");
@@ -113,7 +120,7 @@ function viewGroups(){
   <div class="row"><input id="pn" placeholder="Nombre del participante"><select id="pi">${instOpts()}</select>
   <button class="btn" onclick="addP()">Agregar</button><button class="btn ghost" onclick="demo()">Cargar ejemplo</button>
   <button class="btn alt" onclick="distribute()" ${S.people.length<4?"disabled":""}>🎲 Distribuir en 4 grupos</button>
-  <button class="btn ghost" onclick="if(confirm('¿Borrar todo el taller?')){localStorage.removeItem(KEY);location.reload()}">Reiniciar</button></div>
+  <button class="btn ghost" onclick="if(confirm('¿Borrar todo el taller?')){fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({accion:'limpiar'})}).catch(()=>{});localStorage.removeItem(KEY);location.reload()}">Reiniciar</button></div>
   <p>${S.people.length} participantes · ${Object.entries(per).map(([k,v])=>`<span class="chip">${esc(k)}: ${v}</span>`).join("")}</p>
   <div class="grid">${S.groups.length?S.groups.map((g,k)=>`<div class="panel g" style="--c:${GROUPS[k].c}"><h3>${GROUPS[k].n} · ${g.length}</h3>${g.map(p=>`<div><b>${esc(p.n)}</b><br><small>${esc(p.i)}</small></div>`).join("<hr style='opacity:.15'>")}</div>`).join(""):""}</div>`;
 }
@@ -122,10 +129,11 @@ function addP(){const n=$("pn").value.trim();if(!n)return;S.people.push({n,i:$("
 function viewM1(){
   $("app").innerHTML=`<h2>Momento 1 · Identificar oportunidades</h2><p class="sub">¿Qué estrategias, recursos o experiencias de internacionalización puede aportar tu institución? (aulas espejo, clases con docentes extranjeros, idiomas, redes…)</p>
   <div class="row"><select id="ci">${instOpts()}</select><input id="ct" style="flex:3 1 300px" placeholder="Escribe una oportunidad…" onkeydown="if(event.key=='Enter')addC()"><button class="btn" onclick="addC()">Pegar nota</button></div>
+  <div class="panel" style="display:flex;gap:14px;align-items:center;margin-bottom:14px"><img width="110" height="110" alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(PHONE_URL)}"><div><b>Participa desde tu celular</b><br>Escanea el QR o entra a<br><small>${esc(PHONE_URL)}</small></div></div>
   <div class="big">${S.cards.length} <span style="font-size:18px;font-weight:600">oportunidades</span></div>
   <div class="grid">${S.cards.map(noteHtml).join("")}</div>`;
 }
-const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${esc(c.t)}<small>${esc(c.i)}</small>${S.step==2?`<button class="vote" onclick="vote('${c.id}')">⭐ ${c.v}</button>`:""}</div>`;
+const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${esc(c.t)}<small>${c.n?esc(c.n)+" · ":""}${esc(c.i)}</small>${S.step==2?`<button class="vote" onclick="vote('${c.id}')">⭐ ${c.v}</button>`:""}</div>`;
 function addC(){const t=$("ct").value.trim();if(!t)return;S.cards.push({id:uid(),t,i:$("ci").value,line:null,v:0});save()}
 
 function viewM2(){
@@ -173,7 +181,24 @@ function exportCsv(){
   const b=new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
   const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Ruta-Internacionalizacion-2027.csv";l.click();
 }
-render();drawTimer();
+
+// Vista del celular: cada participante envía su nota; llega a la hoja como una fila propia (sin pisar a los demás).
+function phoneView(){
+  ["nav","clock"].forEach(i=>$(i).style.display="none");
+  const me=JSON.parse(localStorage.getItem(KEY+"_yo")||"{}");let sent=+me.sent||0;
+  $("app").innerHTML=`<h2>Momento 1 · Tu aporte</h2><p class="sub">¿Qué estrategia, recurso o experiencia de internacionalización puede aportar tu institución?</p>
+  <div class="panel form"><input id="pn" class="full" placeholder="Tu nombre" value="${esc(me.n)}"><select id="pi" class="full">${instOpts()}</select>
+  <textarea id="pt" class="full" rows="4" placeholder="Escribe tu oportunidad…"></textarea>
+  <button class="btn full" id="ps" style="font-size:18px">Enviar</button><div id="pm" class="full" style="font-weight:700"></div></div>`;
+  if(me.i)$("pi").value=me.i;
+  $("ps").onclick=()=>{const n=$("pn").value.trim(),t=$("pt").value.trim();
+    if(!n||!t){$("pm").textContent="Escribe tu nombre y tu aporte.";return}
+    const i=$("pi").value;
+    fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify({accion:"nota",id:uid(),n,i,t})})
+      .then(()=>{localStorage.setItem(KEY+"_yo",JSON.stringify({n,i,sent:++sent}));$("pt").value="";$("pm").textContent="✅ ¡Enviada! Llevas "+sent+". Puedes enviar otra."})
+      .catch(()=>{$("pm").textContent="No se pudo enviar, intenta de nuevo."})};
+}
+PHONE?phoneView():(render(),drawTimer());
 </script>
 </body>
 </html>
