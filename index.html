@@ -176,14 +176,13 @@ function openQr(url,titulo){$("qrm").innerHTML=`<div class="panel" style="text-a
   <p><b style="word-break:break-all">${esc(url)}</b></p><button class="btn" onclick="copy('${url}',this)">📋 Copiar enlace</button> <button class="btn ghost" onclick="closeQr()">Cerrar</button></div>`;$("qrm").style.display="flex"}
 const closeQr=()=>$("qrm").style.display="none";
 document.addEventListener("keydown",e=>{if(e.key=="Escape")closeQr()});
-const qrPanel=(url,titulo)=>`<div class="panel" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:16px"><span title="Clic para ampliar" style="cursor:zoom-in" onclick="openQr('${url}','${titulo}')">${qr(url,170)}</span>
-  <div style="flex:1 1 260px"><h3 style="margin:0 0 6px;color:var(--prim)">${titulo}</h3>Escanea el QR o entra a<br><b style="word-break:break-all">${esc(url)}</b><br>
-  <button class="btn" style="margin-top:10px" onclick="copy('${url}',this)">📋 Copiar enlace</button></div></div>`;
+// QR chico junto al encabezado (deja espacio a las notas); al hacer clic abre el modal con el QR grande, el enlace y "Copiar enlace".
+const withQr=(left,url,titulo)=>`<div style="display:flex;gap:16px;align-items:flex-start;justify-content:space-between"><div style="flex:1 1 auto;min-width:0">${left}</div>
+  <div title="Clic para ampliar" style="cursor:zoom-in;text-align:center;flex:0 0 auto;background:#fff;border-radius:16px;padding:8px;box-shadow:var(--sombra)" onclick="openQr('${url}','${titulo}')">${qr(url,96)}<div style="font-size:12px;font-weight:700;color:var(--prim);margin-top:2px">Clic para ampliar</div></div></div>`;
 
 function viewM1(){
-  $("app").innerHTML=`<h2>Momento 1 · Identificar oportunidades</h2><p class="sub">¿Qué estrategias, recursos o experiencias de internacionalización puede aportar tu institución? (aulas espejo, clases con docentes extranjeros, idiomas, redes…)</p>
-  ${qrPanel(PHONE_URL,"📱 Participa desde tu celular")}
-  <div class="big">${S.cards.length} <span style="font-size:18px;font-weight:600;color:var(--ink);-webkit-text-fill-color:var(--ink)">oportunidades</span></div>
+  $("app").innerHTML=withQr(`<h2>Momento 1 · Identificar oportunidades</h2><p class="sub">¿Qué estrategias, recursos o experiencias de internacionalización puede aportar tu institución? (aulas espejo, clases con docentes extranjeros, idiomas, redes…)</p>`,PHONE_URL,"📱 Participa desde tu celular")+`
+  <div class="big" style="font-size:34px">${S.cards.length} <span style="font-size:18px;font-weight:600;color:var(--ink);-webkit-text-fill-color:var(--ink)">oportunidades</span></div>
   <div class="grid">${S.cards.map(noteHtml).join("")}</div>`;
 }
 // Contenido de una nota: primero quién (nombre e institución), luego el texto recortado con "Ver más" si es largo.
@@ -207,9 +206,8 @@ function drop(e,k){e.preventDefault();const c=S.cards.find(c=>c.id==e.dataTransf
 
 function viewM3(){
   const top=S.cards.filter(c=>c.v>0).sort((a,b)=>b.v-a.v).slice(0,6);
-  $("app").innerHTML=`<h2>Momento 3 · Diseñar las acciones</h2><p class="sub">Grupos mixtos al azar. <b>Un solo participante por grupo</b> escanea el QR, elige su grupo y llena la matriz. Ideas más votadas: ${top.map(c=>`<span class="chip">${esc(c.t.slice(0,40))} (${c.v}⭐)</span>`).join("")||"—"}</p>
-  ${qrPanel(GROUP_URL,"📝 Matriz del grupo (1 persona por grupo)")}
-  <div class="row"><button class="btn alt" onclick="distribute()" ${people().length<4?"disabled":""}>🎲 ${S.groups.length?"Volver a organizar":"Organizar"} en 4 grupos</button>
+  $("app").innerHTML=withQr(`<h2>Momento 3 · Diseñar las acciones</h2><p class="sub">Grupos mixtos al azar. <b>Un solo participante por grupo</b> escanea el QR, elige su grupo y llena la matriz. Ideas más votadas: ${top.map(c=>`<span class="chip">${esc(c.t.slice(0,40))} (${c.v}⭐)</span>`).join("")||"—"}</p>`,GROUP_URL,"📝 Matriz del grupo (1 persona por grupo)")+`
+  <div class="row" style="margin-top:12px"><button class="btn alt" onclick="distribute()" ${people().length<4?"disabled":""}>🎲 ${S.groups.length?"Volver a organizar":"Organizar"} en 4 grupos</button>
   <span class="chip">${people().length} participantes</span>
   <input id="pn" placeholder="Agregar a alguien que no envió aporte" style="flex:2 1 220px"><select id="pi">${instOpts()}</select><button class="btn ghost" onclick="addP()">Agregar</button></div>
   <div class="grid">${S.groups.length?GROUPS.map((G,k)=>{const A=S.actions.filter(a=>a.g==k);return`<div class="panel g" style="--c:${G.c}"><h3>${G.n} · ${(S.groups[k]||[]).length}</h3>${(S.groups[k]||[]).map(p=>`<div style="padding:4px 0"><b>${esc(p.n)}</b><br><small>${esc(p.i)}</small></div>`).join("")}
