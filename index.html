@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ruta de Internacionalización 2027</title>
+<style>
+:root{--cafe:#3b2418;--crema:#fbf3e4;--verde:#2f6f4e;--oro:#e8a33d;--rojo:#c8432b;--card:#fff;--ink:#2a1a12}
+@media (prefers-color-scheme:dark){:root{--crema:#1e130d;--card:#2c1d14;--ink:#f6ead6}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:var(--crema);color:var(--ink)}
+header{background:linear-gradient(120deg,var(--cafe),#6b3f26 60%,var(--verde));color:#fff;padding:18px 24px}
+header h1{margin:0;font-size:clamp(20px,3vw,32px)} header p{margin:4px 0 0;opacity:.85}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 24px;position:sticky;top:0;background:var(--crema);z-index:5;align-items:center;border-bottom:1px solid #0002}
+nav button{border:0;border-radius:999px;padding:10px 16px;font-weight:600;cursor:pointer;background:#0001;color:var(--ink)}
+nav button.on{background:var(--oro);color:#2a1a12;transform:scale(1.06);box-shadow:0 4px 12px #0003}
+#clock{position:fixed;right:16px;bottom:16px;z-index:9;background:var(--cafe);color:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 6px 20px #0006;min-width:210px;text-align:center}
+#clock.low{background:var(--rojo);animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+#tm{font:800 44px ui-monospace,monospace;display:block}
+#clock .opts{display:flex;gap:6px;justify-content:center;margin-top:6px}
+#clock button{border:0;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;background:var(--oro);color:#2a1a12}
+#bar{height:5px;background:var(--oro);border-radius:3px;margin-top:8px;transition:width 1s linear}
+#end{display:none;position:fixed;inset:0;z-index:20;background:#000c;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;animation:pop .4s}
+#end h1{font-size:clamp(40px,8vw,96px);margin:0}
+main{padding:20px 24px;max-width:1500px;margin:auto}
+h2{margin:0 0 4px;font-size:clamp(22px,3vw,30px)} .sub{opacity:.75;margin:0 0 16px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--verde);color:#fff}
+.btn.alt{background:var(--oro);color:#2a1a12}.btn.ghost{background:#0002;color:var(--ink)}
+input,select,textarea{font:inherit;padding:9px 10px;border-radius:8px;border:1px solid #0004;background:var(--card);color:var(--ink);width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.row>*{width:auto;flex:1 1 180px}.row .btn{flex:0 0 auto}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.panel{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 3px 12px #0002}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#0002;margin:2px}
+.g{border-top:8px solid var(--c)}.g h3{margin:0 0 8px;color:var(--c)}
+.note{padding:12px;border-radius:4px 14px 4px 14px;color:#2a1a12;box-shadow:2px 4px 8px #0003;margin-bottom:10px;animation:pop .35s;cursor:grab;font-size:15px}
+.note small{display:block;opacity:.7;margin-top:6px;font-weight:700}
+@keyframes pop{from{transform:scale(.6) rotate(-6deg);opacity:0}}
+.cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.col{background:var(--card);border-radius:14px;min-height:200px;padding:10px;border-top:8px solid var(--c)}
+.col.over{outline:3px dashed var(--c)} .col h4{margin:0 0 8px;color:var(--c)}
+.vote{border:0;background:#0002;border-radius:999px;cursor:pointer;margin-top:6px;padding:3px 10px;font-weight:700}
+.form{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.form .full{grid-column:1/-1}
+.st{cursor:pointer;border:0;border-radius:999px;padding:4px 12px;font-weight:700}
+.st.ok{background:var(--verde);color:#fff}.st.pend{background:var(--oro);color:#2a1a12}
+.big{font-size:44px;font-weight:800}
+</style>
+</head>
+<body>
+<header><h1>☕ Ruta de Internacionalización 2027</h1><p>Taller de cocreación · Universidades y Secretarías de Educación</p></header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<div id="clock">⏱<span id="tm">00:00</span>
+  <div class="opts"><button onclick="startTimer(5)">5</button><button onclick="startTimer(10)">10</button><button onclick="startTimer(15)">15</button><button onclick="startTimer(20)">20</button><button onclick="stopTimer()" style="background:#fff3">■</button></div><div id="bar" style="width:0"></div></div>
+<div id="end"><h1>⏰ ¡Se acabó el tiempo!</h1><p style="font-size:24px">Cierren la idea en la que están y pasemos al siguiente paso.</p>
+  <button class="btn alt" style="font-size:20px" onclick="this.parentNode.style.display='none'">Continuar</button></div>
+<script>
+const INST=["Universidad de Caldas","Universidad Autónoma de Manizales","Universidad Católica de Manizales","Universidad de Manizales","UNIOC","Uniminuto","UNAD","SED - Secretaría de Educación","SEM - Secretaría de Educación"];
+const LINES=[{n:"Internacionalización del currículo",c:"#2f6f4e",e:"📚"},{n:"Competencias globales e interculturales",c:"#c8432b",e:"🌎"},{n:"Intercambio virtual y aulas espejo",c:"#2b6cb0",e:"💻"},{n:"Cooperación e innovación rural",c:"#b7791f",e:"🌱"},{n:"Movilidad y redes académicas",c:"#7b3fa0",e:"✈️"}];
+const GROUPS=[{n:"Grupo Origen",c:"#c8432b"},{n:"Grupo Cosecha",c:"#2f6f4e"},{n:"Grupo Cumbre",c:"#2b6cb0"},{n:"Grupo Raíz",c:"#b7791f"}];
+const STEPS=[{t:"👥 Grupos"},{t:"1 · Identificar"},{t:"2 · Agrupar"},{t:"3 · Diseñar"},{t:"4 · Validar"}];
+const NOTE_COLORS=["#ffe08a","#b8e6c1","#ffc2b0","#bcd9f5","#e3c6f2","#ffd3a8","#c9f0e8","#f6e0a4","#d4e8a8"];
+const KEY="ruta2027";
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||{step:0,people:[],groups:[],cards:[],actions:[]};
+let left=0,tick=null,total=0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// URL de la app web de Apps Script (ver Code.gs). Vacío = solo funciona en este navegador.
+const SHEET_URL="https://script.google.com/macros/s/AKfycbx9qNXof7cOCfGR-jrdehNVffyjmq7wWe1SzXEYSrrApSLBzskPNLlNVz1S_f2xPBD2/exec";
+let pushT;
+const save=()=>{S.ts=Date.now();localStorage.setItem(KEY,JSON.stringify(S));render();
+  if(SHEET_URL){clearTimeout(pushT);pushT=setTimeout(()=>fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(S)}).catch(()=>{}),600)}};
+// Cada 5 s trae el estado de la hoja; no repinta si alguien está escribiendo.
+if(SHEET_URL)setInterval(async()=>{try{
+  const r=await(await fetch(SHEET_URL)).json();
+  if(r.ts>(S.ts||0)&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){S=r;localStorage.setItem(KEY,JSON.stringify(S));render()}
+}catch(e){}},5000);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const instOpts=()=>INST.map(i=>`<option>${esc(i)}</option>`).join("");
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function go(i){S.step=i;save()}
+// Cronómetro independiente de los momentos: se elige 5/10/15/20 min y empieza a descontar.
+function startTimer(m){clearInterval(tick);total=left=m*60;drawTimer();
+  tick=setInterval(()=>{left--;drawTimer();if(left<=0){clearInterval(tick);timeUp()}},1000)}
+function stopTimer(){clearInterval(tick);left=0;drawTimer()}
+function drawTimer(){$("tm").textContent=String(left/60|0).padStart(2,"0")+":"+String(left%60).padStart(2,"0");
+  $("clock").classList.toggle("low",left>0&&left<=60);$("bar").style.width=(total?left/total*100:0)+"%"}
+function timeUp(){$("end").style.display="flex";
+  try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();o.stop(a.currentTime+.6)}catch(e){}}
+
+// Distribución: se ordenan por institución y se reparten en ronda → cada institución queda repartida entre los 4 grupos y los tamaños quedan parejos.
+function distribute(){
+  const by={};S.people.forEach(p=>(by[p.i]??=[]).push(p));
+  const order=shuffle(Object.keys(by)).flatMap(k=>shuffle(by[k]));
+  S.groups=GROUPS.map(()=>[]);
+  order.forEach((p,i)=>S.groups[i%4].push(p));
+  save();
+}
+function demo(){
+  const names=["Ana","Luis","María","Carlos","Sofía","Juan","Laura","Pedro","Camila","Andrés","Valentina","Jorge","Paula","Diego","Marta","Felipe","Natalia","Sergio"];
+  S.people=names.map((n,k)=>({n,i:INST[k%INST.length]}));distribute();
+}
+
+function render(){
+  $("nav").innerHTML=STEPS.map((s,i)=>`<button class="${i==S.step?"on":""}" onclick="go(${i})">${s.t}</button>`).join("");
+  [viewGroups,viewM1,viewM2,viewM3,viewM4][S.step]();
+}
+
+function viewGroups(){
+  const per={};S.people.forEach(p=>per[p.i]=(per[p.i]||0)+1);
+  $("app").innerHTML=`<h2>Conformación de grupos</h2><p class="sub">Registra a los asistentes y reparte en 4 grupos mixtos: cada institución queda dividida entre los grupos.</p>
+  <div class="row"><input id="pn" placeholder="Nombre del participante"><select id="pi">${instOpts()}</select>
+  <button class="btn" onclick="addP()">Agregar</button><button class="btn ghost" onclick="demo()">Cargar ejemplo</button>
+  <button class="btn alt" onclick="distribute()" ${S.people.length<4?"disabled":""}>🎲 Distribuir en 4 grupos</button>
+  <button class="btn ghost" onclick="if(confirm('¿Borrar todo el taller?')){localStorage.removeItem(KEY);location.reload()}">Reiniciar</button></div>
+  <p>${S.people.length} participantes · ${Object.entries(per).map(([k,v])=>`<span class="chip">${esc(k)}: ${v}</span>`).join("")}</p>
+  <div class="grid">${S.groups.length?S.groups.map((g,k)=>`<div class="panel g" style="--c:${GROUPS[k].c}"><h3>${GROUPS[k].n} · ${g.length}</h3>${g.map(p=>`<div><b>${esc(p.n)}</b><br><small>${esc(p.i)}</small></div>`).join("<hr style='opacity:.15'>")}</div>`).join(""):""}</div>`;
+}
+function addP(){const n=$("pn").value.trim();if(!n)return;S.people.push({n,i:$("pi").value});S.groups=[];save()}
+
+function viewM1(){
+  $("app").innerHTML=`<h2>Momento 1 · Identificar oportunidades</h2><p class="sub">¿Qué estrategias, recursos o experiencias de internacionalización puede aportar tu institución? (aulas espejo, clases con docentes extranjeros, idiomas, redes…)</p>
+  <div class="row"><select id="ci">${instOpts()}</select><input id="ct" style="flex:3 1 300px" placeholder="Escribe una oportunidad…" onkeydown="if(event.key=='Enter')addC()"><button class="btn" onclick="addC()">Pegar nota</button></div>
+  <div class="big">${S.cards.length} <span style="font-size:18px;font-weight:600">oportunidades</span></div>
+  <div class="grid">${S.cards.map(noteHtml).join("")}</div>`;
+}
+const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${esc(c.t)}<small>${esc(c.i)}</small>${S.step==2?`<button class="vote" onclick="vote('${c.id}')">⭐ ${c.v}</button>`:""}</div>`;
+function addC(){const t=$("ct").value.trim();if(!t)return;S.cards.push({id:uid(),t,i:$("ci").value,line:null,v:0});save()}
+
+function viewM2(){
+  const pool=S.cards.filter(c=>c.line==null);
+  $("app").innerHTML=`<h2>Momento 2 · Agrupar y priorizar</h2><p class="sub">Arrastra cada nota a su línea estratégica y vota (⭐) las que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones.</p>
+  <div class="col" style="--c:#888;margin-bottom:14px" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,null)"><h4>Sin clasificar (${pool.length})</h4><div class="grid">${pool.map(noteHtml).join("")}</div></div>
+  <div class="cols">${LINES.map((l,k)=>`<div class="col" style="--c:${l.c}" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,${k})"><h4>${l.e} ${l.n}</h4>${S.cards.filter(c=>c.line===k).sort((a,b)=>b.v-a.v).map(noteHtml).join("")}</div>`).join("")}</div>`;
+}
+function dov(e){e.preventDefault();e.currentTarget.classList.add("over")}
+function drop(e,k){e.preventDefault();const c=S.cards.find(c=>c.id==e.dataTransfer.getData("t"));if(c){c.line=k;save()}}
+function vote(id){S.cards.find(c=>c.id==id).v++;save()}
+
+function viewM3(){
+  if(!S.groups.length){$("app").innerHTML=`<h2>Primero conforma los grupos</h2><button class="btn" onclick="go(0)">Ir a Grupos</button>`;return}
+  const top=S.cards.filter(c=>c.line!=null).sort((a,b)=>b.v-a.v).slice(0,6);
+  $("app").innerHTML=`<h2>Momento 3 · Diseñar las acciones</h2><p class="sub">Cada grupo completa la matriz. Ideas más votadas: ${top.map(c=>`<span class="chip">${esc(c.t.slice(0,40))} (${c.v}⭐)</span>`).join("")||"—"}</p>
+  <div class="grid">${GROUPS.map((G,k)=>`<div class="panel g" style="--c:${G.c}"><h3>${G.n} · ${S.actions.filter(a=>a.g==k).length} acciones</h3>
+  <div class="form">
+  <select id="l${k}" class="full">${LINES.map((l,i)=>`<option value="${i}">${l.e} ${l.n}</option>`).join("")}</select>
+  <textarea id="a${k}" class="full" rows="2" placeholder="1. Acción propuesta"></textarea>
+  <input id="p${k}" placeholder="2. Población participante">
+  <select id="d${k}"><option value="">3. Institución líder</option>${instOpts()}</select>
+  <input id="al${k}" placeholder="4. Aliados potenciales">
+  <input id="pe${k}" placeholder="5. Periodo tentativo (ej. II semestre 2027)">
+  <input id="r${k}" class="full" placeholder="6. Recursos requeridos">
+  <input id="ev${k}" class="full" placeholder="Evidencia de cumplimiento"></div>
+  <button class="btn" style="margin-top:8px" onclick="addA(${k})">+ Agregar acción</button>
+  ${S.actions.filter(a=>a.g==k).map(a=>`<div style="margin-top:8px"><span class="chip" style="background:${LINES[a.line].c};color:#fff">${LINES[a.line].e}</span> ${esc(a.a)}</div>`).join("")}</div>`).join("")}</div>`;
+}
+function addA(k){const a=$("a"+k).value.trim();if(!a)return;
+  S.actions.push({id:uid(),g:k,line:+$("l"+k).value,a,p:$("p"+k).value,l:$("d"+k).value,al:$("al"+k).value,per:$("pe"+k).value,r:$("r"+k).value,ev:$("ev"+k).value,ok:false});save()}
+
+function viewM4(){
+  $("app").innerHTML=`<h2>Momento 4 · Validar compromisos</h2><p class="sub">Plenaria: marca como confirmadas las acciones con institución líder y deja "por validar" las que requieren aprobación institucional.</p>
+  <div class="row"><button class="btn alt" onclick="exportCsv()">⬇ Exportar matriz (Excel/CSV)</button><span class="chip">${S.actions.filter(a=>a.ok).length} confirmadas</span><span class="chip">${S.actions.filter(a=>!a.ok).length} por validar</span></div>
+  ${LINES.map((l,k)=>{const A=S.actions.filter(a=>a.line==k);return`<div class="panel g" style="--c:${l.c};margin-bottom:14px"><h3>${l.e} ${l.n} (${A.length})</h3>
+  ${A.map(a=>`<div style="padding:8px 0;border-top:1px solid #0002"><b>${esc(a.a)}</b> <button class="st ${a.ok?"ok":"pend"}" onclick="tog('${a.id}')">${a.ok?"✔ Confirmado":"⏳ Por validar"}</button>
+  <br><small>${GROUPS[a.g].n} · Población: ${esc(a.p)||"—"} · Líder: ${esc(a.l)||"—"} · Aliados: ${esc(a.al)||"—"} · Periodo: ${esc(a.per)||"—"} · Recursos: ${esc(a.r)||"—"} · Evidencia: ${esc(a.ev)||"—"}</small></div>`).join("")||"<small>Sin acciones aún</small>"}</div>`}).join("")}`;
+}
+function tog(id){const a=S.actions.find(a=>a.id==id);a.ok=!a.ok;save()}
+function exportCsv(){
+  const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const rows=[["Línea estratégica","Grupo","Acción","Población","Institución líder","Aliados","Periodo","Recursos","Evidencia","Estado"],
+  ...S.actions.map(a=>[LINES[a.line].n,GROUPS[a.g].n,a.a,a.p,a.l,a.al,a.per,a.r,a.ev,a.ok?"Confirmado":"Por validar"])];
+  const b=new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
+  const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Ruta-Internacionalizacion-2027.csv";l.click();
+}
+render();drawTimer();
+</script>
+</body>
+</html>
