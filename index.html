@@ -128,8 +128,15 @@ if(!PHONE)setInterval(async()=>{try{
   const r=await pull(),{inbox,votos,matriz}=r;delete r.inbox;delete r.votos;delete r.matriz;
   if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   let ch=false;
-  // La hoja quedó vacía (taller reiniciado) y lo local tiene más de 30 s: se descarta para no reescribir datos viejos.
-  if(!r.ts&&S.ts&&Date.now()-S.ts>30000){localStorage.removeItem(KEY);S={step:0,people:[],groups:[],cards:[],actions:[],lines:[]};render();return}
+  // Época del taller: si la hoja se reinició (otra época), lo local es de antes y se descarta en vez de reescribirlo.
+  // Una copia local sin época solo se descarta si tiene más de 30 s; si es reciente adopta la de la hoja.
+  const ep=r.epoch||"",vacio={step:0,people:[],groups:[],cards:[],actions:[],lines:[]};
+  if(ep&&S.epoch!==ep){
+    if(S.epoch||(S.ts&&Date.now()-S.ts>30000)){localStorage.removeItem(KEY);S={...vacio,epoch:ep};render();return}
+    S.epoch=ep;
+  }
+  // Respaldo si la hoja aún no maneja épocas: hoja vacía y lo local tiene más de 30 s.
+  if(!ep&&!r.ts&&S.ts&&Date.now()-S.ts>30000){localStorage.removeItem(KEY);S={...vacio};render();return}
   if(r.ts>(S.ts||0)){S=r;ch=true}
   inbox.filter(e=>!S.cards.some(c=>c.id==e.id)).forEach(e=>{S.cards.push({id:e.id,t:e.t,i:e.i,n:e.n,line:null,v:0});ch=true});
   S.cards.forEach(c=>{const v=votos.filter(x=>x.c==c.id).length;if(v!=c.v){c.v=v;ch=true}});
