@@ -49,6 +49,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 
 .g{border-top:10px solid var(--c)}.g h3{margin:0 0 8px;color:var(--c);font-weight:800}
 .note{padding:14px;border-radius:6px 20px 6px 20px;color:#1d1550;box-shadow:0 6px 14px #1d155030;margin-bottom:12px;animation:pop .35s;cursor:grab;font-size:15px;font-weight:500}
 .note:nth-child(even){transform:rotate(1.2deg)}.note:nth-child(odd){transform:rotate(-1deg)}
+.note .txt{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.more{border:0;background:#ffffffb3;border-radius:999px;margin-top:6px;padding:4px 12px;font-weight:700;font-size:13px;font-family:inherit;cursor:pointer;color:var(--prim)}
 .note small{display:block;opacity:.7;margin-top:6px;font-weight:700}
 @keyframes pop{from{transform:scale(.6) rotate(-6deg);opacity:0}}
 .cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
@@ -184,7 +186,15 @@ function viewM1(){
   <div class="big">${S.cards.length} <span style="font-size:18px;font-weight:600;color:var(--ink);-webkit-text-fill-color:var(--ink)">oportunidades</span></div>
   <div class="grid">${S.cards.map(noteHtml).join("")}</div>`;
 }
-const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${esc(c.t)}<small>${c.n?esc(c.n)+" · ":""}${esc(c.i)}</small>${S.step==2?`<span class="vote">⭐ ${c.v||0}</span>`:""}</div>`;
+// Contenido de una nota: primero quién (nombre e institución), luego el texto recortado con "Ver más" si es largo.
+const LONG=140;
+const noteBody=c=>`${c.n?`<div style="font-weight:800">${esc(c.n)}</div>`:""}<small style="margin:0 0 8px">${esc(c.i)}</small><div class="txt">${esc(c.t)}</div>${c.t.length>LONG?`<button class="more" onclick="openNote('${c.id}')">Ver más</button>`:""}`;
+const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${noteBody(c)}${S.step==2?`<span class="vote">⭐ ${c.v||0}</span>`:""}</div>`;
+function openNote(id){const c=S.cards.find(c=>c.id==id)||DATA.inbox.find(c=>c.id==id);if(!c)return;
+  $("okm").innerHTML=`<div class="panel" style="max-width:680px;width:100%;max-height:90vh;overflow:auto;border-top:10px solid ${NOTE_COLORS[INST.indexOf(c.i)%9]}" onclick="event.stopPropagation()">
+  <h2 style="margin-bottom:0">${esc(c.n)||"Aporte"}</h2><span class="chip">${esc(c.i)}</span>
+  <p style="white-space:pre-wrap;font-size:18px;line-height:1.6">${esc(c.t)}</p>
+  <p style="text-align:right;margin-bottom:0"><button class="btn" onclick="$('okm').style.display='none'">Cerrar</button></p></div>`;$("okm").style.display="flex"}
 
 function viewM2(){
   const pool=S.cards.filter(c=>c.line==null);
@@ -262,7 +272,7 @@ function drawTab(){
   const mine=DATA.votos.filter(v=>v.v==me.id),open=DATA.step>=2,rest=MAX_VOTOS-mine.length;
   el.innerHTML=`<h2>Tablero de ideas (${DATA.inbox.length})</h2><p class="sub">${open?`Vota por las ideas que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones. Te quedan <b>${rest}</b> de ${MAX_VOTOS} votos.`:"La votación se abrirá en el Momento 2. Mientras tanto, mira lo que proponen los demás."}</p>
   ${DATA.inbox.map(c=>{const mio=mine.some(v=>v.c==c.id),n=DATA.votos.filter(v=>v.c==c.id).length;
-    return`<div class="note" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]};transform:none">${esc(c.t)}<small>${esc(c.n)} · ${esc(c.i)}</small>
+    return`<div class="note" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]};transform:none">${noteBody(c)}
     <button class="vote" ${mio||!open||rest<=0?"disabled":""} onclick="vota('${c.id}')">${mio?"✔ Votaste":"⭐ Votar"} · ${n}</button></div>`}).join("")}`;
 }
 function vota(c){const me=store("_yo");DATA.votos.push({c,v:me.id});drawTab();post({accion:"voto",c,v:me.id})}
