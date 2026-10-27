@@ -10,10 +10,10 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:"Poppins","Segoe UI",system-ui,sans-serif;color:var(--ink);min-height:100vh;
   background:radial-gradient(900px 520px at 0 0,#e2d9ff,transparent),radial-gradient(800px 520px at 100% 10%,#cff7ec,transparent),radial-gradient(800px 600px at 50% 100%,#ffe0ea,transparent),var(--bg);background-attachment:fixed}
-header{position:relative;overflow:hidden;background:linear-gradient(115deg,var(--prim),var(--rosa) 60%,var(--coral));color:#fff;padding:22px 28px}
+header{position:relative;overflow:hidden;background:linear-gradient(115deg,var(--prim),var(--rosa) 60%,var(--coral));color:#fff;padding:12px 28px}
 header:before,header:after{content:"";position:absolute;border-radius:50%;background:#ffffff26}
 header:before{width:220px;height:220px;right:-40px;top:-90px}header:after{width:120px;height:120px;right:180px;bottom:-70px;background:#ffc61a55}
-header h1{margin:0;font-size:clamp(22px,3.4vw,38px);font-weight:800;position:relative}header p{margin:4px 0 0;opacity:.92;position:relative}
+header h1{margin:0;font-size:clamp(20px,2.4vw,30px);font-weight:800;position:relative}header p{margin:2px 0 0;font-size:14px;opacity:.92;position:relative}
 nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 28px;position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(10px);z-index:5;align-items:center;box-shadow:0 2px 14px #6c3cff1f}
 nav button{border:0;border-radius:999px;padding:9px 16px;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer;background:#ece8ff;color:var(--prim);transition:.2s}
 nav button:hover{transform:translateY(-2px)}
@@ -31,7 +31,10 @@ nav button.on{background:linear-gradient(115deg,var(--prim),var(--rosa));color:#
 #prev,#next{position:fixed;bottom:16px;z-index:9;border:0;border-radius:50%;width:58px;height:58px;font-size:22px;cursor:pointer;background:linear-gradient(135deg,var(--prim),var(--rosa));color:#fff;box-shadow:0 8px 20px #6c3cff66;transition:.2s}
 #prev:hover,#next:hover{transform:scale(1.12)}
 #prev{left:16px}#next{left:88px}
-main{padding:24px 28px 110px;max-width:1500px;margin:auto}
+main{padding:18px 28px 100px;max-width:1500px;margin:auto}
+/* Portada: ocupa exactamente la pantalla, sin scroll */
+body.home{overflow:hidden;height:100vh}body.home header{display:none}
+body.home main{height:100vh;padding:0 28px;display:flex;flex-direction:column;justify-content:center}
 h2{margin:0 0 4px;font-size:clamp(24px,3.2vw,36px);font-weight:800;color:var(--prim)} .sub{opacity:.75;margin:0 0 16px}
 .btn{border:0;border-radius:999px;padding:11px 20px;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer;background:linear-gradient(115deg,var(--prim),#8f6bff);color:#fff;box-shadow:0 6px 16px #6c3cff44;transition:.2s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px #6c3cff55}.btn:disabled{opacity:.4;cursor:not-allowed}
@@ -59,45 +62,56 @@ input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 
 </head>
 <body>
 <header><h1>🌎 Ruta de Internacionalización 2027</h1><p>Taller de cocreación · Universidades y Secretarías de Educación</p></header>
-<nav id="nav"></nav>
 <main id="app"></main>
 <button id="prev" title="Anterior" onclick="go(S.step-1)">◀</button><button id="next" title="Siguiente" onclick="go(S.step+1)">▶</button>
 <div id="clock">⏱<span id="tm">00:00</span>
   <div class="opts"><button onclick="startTimer(5)">5</button><button onclick="startTimer(10)">10</button><button onclick="startTimer(15)">15</button><button onclick="startTimer(20)">20</button><button onclick="stopTimer()" style="background:#fff3">■</button></div><div id="bar" style="width:0"></div></div>
+<div id="qrm" onclick="closeQr()" style="display:none;position:fixed;inset:0;z-index:30;background:#1d1550d9;align-items:center;justify-content:center;padding:16px"></div>
 <div id="end"><h1>⏰ ¡Se acabó el tiempo!</h1><p style="font-size:24px">Cierren la idea en la que están y pasemos al siguiente paso.</p>
   <button class="btn alt" style="font-size:20px" onclick="this.parentNode.style.display='none'">Continuar</button></div>
 <script>
 const INST=["Universidad de Caldas","Universidad Autónoma de Manizales","Universidad Católica de Manizales","Universidad de Manizales","UNIOC","Uniminuto","UNAD","SED - Secretaría de Educación","SEM - Secretaría de Educación"];
 const LINES=[{n:"Internacionalización del currículo",c:"#6c3cff",e:"📚"},{n:"Competencias globales e interculturales",c:"#ff4f6d",e:"🌎"},{n:"Intercambio virtual y aulas espejo",c:"#1e90ff",e:"💻"},{n:"Cooperación e innovación rural",c:"#00b894",e:"🌱"},{n:"Movilidad y redes académicas",c:"#ff9f1a",e:"✈️"}];
 const GROUPS=[{n:"Grupo Origen",c:"#ff4f6d"},{n:"Grupo Cosecha",c:"#00b894"},{n:"Grupo Cumbre",c:"#6c3cff"},{n:"Grupo Raíz",c:"#ff9f1a"}];
-const STEPS=[{t:"🏠 Inicio"},{t:"👥 Grupos"},{t:"1 · Identificar"},{t:"2 · Agrupar"},{t:"3 · Diseñar"},{t:"4 · Validar"},{t:"🎉 Cierre"}];
-const PROD=[null,null,"Banco de oportunidades institucionales","Líneas estratégicas priorizadas","Borrador de la Ruta de Internacionalización 2027","Acuerdos iniciales y responsables"];
+// Pantallas en orden: la 0 es la portada (sin cronómetro).
+const STEPS=[{t:"Inicio"},{t:"Momento 1"},{t:"Momento 2"},{t:"Momento 3"},{t:"Momento 4"},{t:"Cierre"}];
+const PROD=[null,"Banco de oportunidades institucionales","Líneas estratégicas priorizadas","Borrador de la Ruta de Internacionalización 2027","Acuerdos iniciales y responsables"];
 const NOTE_COLORS=["#ffe066","#8cf0d6","#ffb3c6","#a5d8ff","#d0bfff","#ffc999","#b2f2bb","#fff3a3","#ffa8d6"];
+const MAX_VOTOS=3;
 const KEY="ruta2027";
-const PHONE=location.search.includes("celular");
+const MODE=new URLSearchParams(location.search).has("celular")?"celular":new URLSearchParams(location.search).has("grupo")?"grupo":"";
+const PHONE=!!MODE;
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||{step:0,people:[],groups:[],cards:[],actions:[]};
 let left=0,tick=null,total=0;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-// URL de la app web de Apps Script (ver Code.gs). Vacío = solo funciona en este navegador.
-const PHONE_URL=location.origin+location.pathname+"?celular";
+const BASE=location.origin+location.pathname;
+const PHONE_URL=BASE+"?celular", GROUP_URL=BASE+"?grupo";
+// URL de la app web de Apps Script (ver Code.gs).
 const SHEET_URL="https://script.google.com/macros/s/AKfycbzN8MsoFYEBNd31jCp1ol0HVd_ahASctc_HYr6YadPaaOMK5kdFGV-r3g7Cqn2bwt30/exec";
-let pushT;
-const save=()=>{S.ts=Date.now();localStorage.setItem(KEY,JSON.stringify(S));render();
-  if(SHEET_URL){clearTimeout(pushT);pushT=setTimeout(()=>fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(S)}).catch(()=>{}),600)}};
-// Cada 5 s trae el estado de la hoja; no repinta si alguien está escribiendo.
-// Cada 5 s trae el estado de la hoja y las notas enviadas desde celulares (bandeja "inbox"); no repinta si alguien está escribiendo.
-if(SHEET_URL&&!PHONE)setInterval(async()=>{try{
-  const r=await(await fetch(SHEET_URL)).json(),inbox=r.inbox||[];delete r.inbox;
-  const idle=!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
-  if(!idle)return;
-  if(r.ts>(S.ts||0)){S=r;localStorage.setItem(KEY,JSON.stringify(S));render()}
-  const add=inbox.filter(e=>!S.cards.some(c=>c.id==e.id));
-  if(add.length){S.cards.push(...add.map(e=>({id:e.id,t:e.t,i:e.i,n:e.n,line:null,v:0})));save()}
-}catch(e){}},5000);
+const post=o=>fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(o)});
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const instOpts=()=>INST.map(i=>`<option>${esc(i)}</option>`).join("");
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pull=async()=>({inbox:[],votos:[],matriz:[],groups:[],step:0,...await(await fetch(SHEET_URL)).json()});
+const qr=(url,px)=>`<img width="${px}" height="${px}" alt="QR" style="border-radius:12px" src="https://api.qrserver.com/v1/create-qr-code/?size=${px*2}x${px*2}&data=${encodeURIComponent(url)}">`;
+function copy(url,btn){navigator.clipboard.writeText(url).then(()=>{btn.textContent="✅ ¡Copiado!";setTimeout(()=>btn.textContent="📋 Copiar enlace",1800)})}
+
+let pushT;
+const save=()=>{S.ts=Date.now();localStorage.setItem(KEY,JSON.stringify(S));render();
+  clearTimeout(pushT);pushT=setTimeout(()=>post(S).catch(()=>{}),600)};
+
+// Facilitador: cada 5 s trae notas, votos y matrices enviados desde celulares (una fila por envío, así no se pisan).
+if(!PHONE)setInterval(async()=>{try{
+  const r=await pull(),{inbox,votos,matriz}=r;delete r.inbox;delete r.votos;delete r.matriz;
+  if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+  let ch=false;
+  if(r.ts>(S.ts||0)){S=r;ch=true}
+  inbox.filter(e=>!S.cards.some(c=>c.id==e.id)).forEach(e=>{S.cards.push({id:e.id,t:e.t,i:e.i,n:e.n,line:null,v:0});ch=true});
+  S.cards.forEach(c=>{const v=votos.filter(x=>x.c==c.id).length;if(v!=c.v){c.v=v;ch=true}});
+  matriz.filter(m=>!S.actions.some(a=>a.id==m.id)).forEach(m=>{S.actions.push({...m,ok:false});ch=true});
+  if(ch)save();
+}catch(e){}},5000);
 
 function go(i){S.step=Math.max(0,Math.min(STEPS.length-1,i));save();
   const a=$("app");a.classList.remove("slide");void a.offsetWidth;a.classList.add("slide");scrollTo(0,0)}
@@ -113,91 +127,81 @@ function drawTimer(){$("tm").textContent=String(left/60|0).padStart(2,"0")+":"+S
 function timeUp(){$("end").style.display="flex";
   try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();o.stop(a.currentTime+.6)}catch(e){}}
 
+// Participantes = quienes enviaron aportes desde el celular + los agregados a mano, sin repetir.
+function people(){const m=new Map();
+  [...S.cards.filter(c=>c.n).map(c=>({n:c.n,i:c.i})),...S.people].forEach(p=>m.set(p.n.trim().toLowerCase()+"|"+p.i,p));
+  return [...m.values()]}
 // Distribución: se ordenan por institución y se reparten en ronda → cada institución queda repartida entre los 4 grupos y los tamaños quedan parejos.
 function distribute(){
-  const by={};S.people.forEach(p=>(by[p.i]??=[]).push(p));
+  const by={};people().forEach(p=>(by[p.i]??=[]).push(p));
   const order=shuffle(Object.keys(by)).flatMap(k=>shuffle(by[k]));
   S.groups=GROUPS.map(()=>[]);
   order.forEach((p,i)=>S.groups[i%4].push(p));
   save();
 }
-function demo(){
-  const names=["Ana","Luis","María","Carlos","Sofía","Juan","Laura","Pedro","Camila","Andrés","Valentina","Jorge","Paula","Diego","Marta","Felipe","Natalia","Sergio"];
-  S.people=names.map((n,k)=>({n,i:INST[k%INST.length]}));distribute();
-}
+function addP(){const n=$("pn").value.trim();if(!n)return;S.people.push({n,i:$("pi").value});save()}
 
 function render(){
-  $("nav").innerHTML=STEPS.map((s,i)=>`<button class="${i==S.step?"on":""}" onclick="go(${i})">${s.t}</button>`).join("");
-  [viewHome,viewGroups,viewM1,viewM2,viewM3,viewM4,viewEnd][S.step]();
+  [viewHome,viewM1,viewM2,viewM3,viewM4,viewEnd][S.step]();
   const sub=document.querySelector(".sub");if(sub&&PROD[S.step])sub.insertAdjacentHTML("afterend",`<p><span class="chip" style="background:var(--sol);color:#1d1550;font-size:14px">🎯 Producto: ${PROD[S.step]}</span></p>`);
   $("prev").style.visibility=S.step?"visible":"hidden";$("next").style.visibility=S.step<STEPS.length-1?"visible":"hidden";
+  $("clock").style.display=S.step?"":"none";document.body.classList.toggle("home",!S.step);
 }
 
 function viewHome(){
-  $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">🌎✨</div>
-  <h2 style="font-size:clamp(32px,6vw,64px)">Ruta de Internacionalización 2027</h2>
-  <p class="sub" style="font-size:clamp(16px,2.2vw,24px)">Taller de cocreación · Universidades y Secretarías de Educación · Estudiantes rurales</p></div>
+  $("app").innerHTML=`<div style="text-align:center;padding:0 0 3vh"><div style="font-size:clamp(36px,8vh,72px)">🌎✨</div>
+  <h2 style="font-size:clamp(28px,6.5vh,64px)">Ruta de Internacionalización 2027</h2>
+  <p class="sub" style="font-size:clamp(14px,2.6vh,24px)">Taller de cocreación · Universidades y Secretarías de Educación · Estudiantes rurales</p></div>
   <div class="grid">${[["📚","Identificar oportunidades","Cada universidad aporta estrategias, recursos y experiencias."],["🧩","Agrupar y priorizar","Organizamos las ideas en líneas estratégicas y votamos."],["🛠️","Diseñar las acciones","Equipos mixtos llenan la matriz de la Ruta."],["🤝","Validar compromisos","Plenaria: coincidencias, líderes y acuerdos."]].map((m,k)=>`<div class="panel g" style="--c:${LINES[k].c};text-align:center"><div style="font-size:44px">${m[0]}</div><h3>Momento ${k+1}</h3><b>${m[1]}</b><p class="sub" style="margin:6px 0 0">${m[2]}</p></div>`).join("")}</div>
-  <p style="text-align:center;margin-top:28px"><button class="btn alt" style="font-size:22px;padding:14px 32px" onclick="go(1)">Comenzar →</button></p>`;
+  <p style="text-align:center;margin:3vh 0 1vh"><button class="btn alt" style="font-size:clamp(16px,3vh,22px);padding:1.4vh 32px" onclick="go(1)">Comenzar →</button></p>
+  <p style="text-align:center;margin:0"><button class="btn ghost" style="font-size:12px;padding:6px 14px;opacity:.6" onclick="reset()">Reiniciar taller (borra todo)</button></p>`;
 }
+function reset(){if(!confirm("¿Borrar todos los datos del taller?"))return;
+  post({accion:"limpiar"}).catch(()=>{}).finally(()=>{localStorage.removeItem(KEY);location.reload()})}
 function viewEnd(){
   const ok=S.actions.filter(a=>a.ok).length;
   $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">🎉</div><h2 style="font-size:clamp(32px,6vw,60px)">¡Gracias por construir la Ruta 2027!</h2>
   <p class="sub" style="font-size:20px">Esto es lo que logramos hoy</p></div>
-  <div class="grid">${[[S.people.length,"participantes"],[S.cards.length,"oportunidades identificadas"],[S.actions.length,"acciones diseñadas"],[ok,"acciones confirmadas"]].map(x=>`<div class="panel" style="text-align:center"><div class="big">${x[0]}</div>${x[1]}</div>`).join("")}</div>
+  <div class="grid">${[[people().length,"participantes"],[S.cards.length,"oportunidades identificadas"],[S.actions.length,"acciones diseñadas"],[ok,"acciones confirmadas"]].map(x=>`<div class="panel" style="text-align:center"><div class="big">${x[0]}</div>${x[1]}</div>`).join("")}</div>
   <p style="text-align:center;margin-top:24px"><button class="btn alt" style="font-size:20px" onclick="exportCsv()">⬇ Descargar la matriz (Excel/CSV)</button></p>`;
 }
-function viewGroups(){
-  const per={};S.people.forEach(p=>per[p.i]=(per[p.i]||0)+1);
-  $("app").innerHTML=`<h2>Conformación de grupos</h2><p class="sub">Registra a los asistentes y reparte en 4 grupos mixtos: cada institución queda dividida entre los grupos.</p>
-  <div class="row"><input id="pn" placeholder="Nombre del participante"><select id="pi">${instOpts()}</select>
-  <button class="btn" onclick="addP()">Agregar</button><button class="btn ghost" onclick="demo()">Cargar ejemplo</button>
-  <button class="btn alt" onclick="distribute()" ${S.people.length<4?"disabled":""}>🎲 Distribuir en 4 grupos</button>
-  <button class="btn ghost" onclick="if(confirm('¿Borrar todo el taller?')){fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({accion:'limpiar'})}).catch(()=>{});localStorage.removeItem(KEY);location.reload()}">Reiniciar</button></div>
-  <p>${S.people.length} participantes · ${Object.entries(per).map(([k,v])=>`<span class="chip">${esc(k)}: ${v}</span>`).join("")}</p>
-  <div class="grid">${S.groups.length?S.groups.map((g,k)=>`<div class="panel g" style="--c:${GROUPS[k].c}"><h3>${GROUPS[k].n} · ${g.length}</h3>${g.map(p=>`<div><b>${esc(p.n)}</b><br><small>${esc(p.i)}</small></div>`).join("<hr style='opacity:.15'>")}</div>`).join(""):""}</div>`;
-}
-function addP(){const n=$("pn").value.trim();if(!n)return;S.people.push({n,i:$("pi").value});S.groups=[];save()}
+
+// El QR chico abre un modal con el QR grande, para proyectarlo y escanearlo desde lejos.
+function openQr(url,titulo){$("qrm").innerHTML=`<div class="panel" style="text-align:center;max-width:94vw" onclick="event.stopPropagation()"><h2>${titulo}</h2>${qr(url,Math.min(520,innerWidth*.8|0,innerHeight*.6|0))}
+  <p><b style="word-break:break-all">${esc(url)}</b></p><button class="btn" onclick="copy('${url}',this)">📋 Copiar enlace</button> <button class="btn ghost" onclick="closeQr()">Cerrar</button></div>`;$("qrm").style.display="flex"}
+const closeQr=()=>$("qrm").style.display="none";
+document.addEventListener("keydown",e=>{if(e.key=="Escape")closeQr()});
+const qrPanel=(url,titulo)=>`<div class="panel" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:16px"><span title="Clic para ampliar" style="cursor:zoom-in" onclick="openQr('${url}','${titulo}')">${qr(url,170)}</span>
+  <div style="flex:1 1 260px"><h3 style="margin:0 0 6px;color:var(--prim)">${titulo}</h3>Escanea el QR o entra a<br><b style="word-break:break-all">${esc(url)}</b><br>
+  <button class="btn" style="margin-top:10px" onclick="copy('${url}',this)">📋 Copiar enlace</button></div></div>`;
 
 function viewM1(){
   $("app").innerHTML=`<h2>Momento 1 · Identificar oportunidades</h2><p class="sub">¿Qué estrategias, recursos o experiencias de internacionalización puede aportar tu institución? (aulas espejo, clases con docentes extranjeros, idiomas, redes…)</p>
-  <div class="row"><select id="ci">${instOpts()}</select><input id="ct" style="flex:3 1 300px" placeholder="Escribe una oportunidad…" onkeydown="if(event.key=='Enter')addC()"><button class="btn" onclick="addC()">Pegar nota</button></div>
-  <div class="panel" style="display:flex;gap:14px;align-items:center;margin-bottom:14px"><img width="110" height="110" alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(PHONE_URL)}"><div><b>Participa desde tu celular</b><br>Escanea el QR o entra a<br><small>${esc(PHONE_URL)}</small></div></div>
-  <div class="big">${S.cards.length} <span style="font-size:18px;font-weight:600">oportunidades</span></div>
+  ${qrPanel(PHONE_URL,"📱 Participa desde tu celular")}
+  <div class="big">${S.cards.length} <span style="font-size:18px;font-weight:600;color:var(--ink);-webkit-text-fill-color:var(--ink)">oportunidades</span></div>
   <div class="grid">${S.cards.map(noteHtml).join("")}</div>`;
 }
-const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${esc(c.t)}<small>${c.n?esc(c.n)+" · ":""}${esc(c.i)}</small>${S.step==3?`<button class="vote" onclick="vote('${c.id}')">⭐ ${c.v}</button>`:""}</div>`;
-function addC(){const t=$("ct").value.trim();if(!t)return;S.cards.push({id:uid(),t,i:$("ci").value,line:null,v:0});save()}
+const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]}">${esc(c.t)}<small>${c.n?esc(c.n)+" · ":""}${esc(c.i)}</small>${S.step==2?`<span class="vote">⭐ ${c.v||0}</span>`:""}</div>`;
 
 function viewM2(){
   const pool=S.cards.filter(c=>c.line==null);
-  $("app").innerHTML=`<h2>Momento 2 · Agrupar y priorizar</h2><p class="sub">Arrastra cada nota a su línea estratégica y vota (⭐) las que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones.</p>
+  $("app").innerHTML=`<h2>Momento 2 · Agrupar y priorizar</h2><p class="sub">Arrastra cada nota a su línea estratégica. Los participantes votan desde su celular (${MAX_VOTOS} votos c/u) por las ideas que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones.</p>
   <div class="col" style="--c:#888;margin-bottom:14px" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,null)"><h4>Sin clasificar (${pool.length})</h4><div class="grid">${pool.map(noteHtml).join("")}</div></div>
   <div class="cols">${LINES.map((l,k)=>`<div class="col" style="--c:${l.c}" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,${k})"><h4>${l.e} ${l.n}</h4>${S.cards.filter(c=>c.line===k).sort((a,b)=>b.v-a.v).map(noteHtml).join("")}</div>`).join("")}</div>`;
 }
 function dov(e){e.preventDefault();e.currentTarget.classList.add("over")}
 function drop(e,k){e.preventDefault();const c=S.cards.find(c=>c.id==e.dataTransfer.getData("t"));if(c){c.line=k;save()}}
-function vote(id){S.cards.find(c=>c.id==id).v++;save()}
 
 function viewM3(){
-  if(!S.groups.length){$("app").innerHTML=`<h2>Primero conforma los grupos</h2><button class="btn" onclick="go(1)">Ir a Grupos</button>`;return}
-  const top=S.cards.filter(c=>c.line!=null).sort((a,b)=>b.v-a.v).slice(0,6);
-  $("app").innerHTML=`<h2>Momento 3 · Diseñar las acciones</h2><p class="sub">Cada grupo completa la matriz. Ideas más votadas: ${top.map(c=>`<span class="chip">${esc(c.t.slice(0,40))} (${c.v}⭐)</span>`).join("")||"—"}</p>
-  <div class="grid">${GROUPS.map((G,k)=>`<div class="panel g" style="--c:${G.c}"><h3>${G.n} · ${S.actions.filter(a=>a.g==k).length} acciones</h3>
-  <div class="form">
-  <select id="l${k}" class="full">${LINES.map((l,i)=>`<option value="${i}">${l.e} ${l.n}</option>`).join("")}</select>
-  <textarea id="a${k}" class="full" rows="2" placeholder="1. Acción propuesta"></textarea>
-  <input id="p${k}" placeholder="2. Población participante">
-  <select id="d${k}"><option value="">3. Institución líder</option>${instOpts()}</select>
-  <input id="al${k}" placeholder="4. Aliados potenciales">
-  <input id="pe${k}" placeholder="5. Periodo tentativo (ej. II semestre 2027)">
-  <input id="r${k}" class="full" placeholder="6. Recursos requeridos">
-  <input id="ev${k}" class="full" placeholder="Evidencia de cumplimiento"></div>
-  <button class="btn" style="margin-top:8px" onclick="addA(${k})">+ Agregar acción</button>
-  ${S.actions.filter(a=>a.g==k).map(a=>`<div style="margin-top:8px"><span class="chip" style="background:${LINES[a.line].c};color:#fff">${LINES[a.line].e}</span> ${esc(a.a)}</div>`).join("")}</div>`).join("")}</div>`;
+  const top=S.cards.filter(c=>c.v>0).sort((a,b)=>b.v-a.v).slice(0,6);
+  $("app").innerHTML=`<h2>Momento 3 · Diseñar las acciones</h2><p class="sub">Grupos mixtos al azar. <b>Un solo participante por grupo</b> escanea el QR, elige su grupo y llena la matriz. Ideas más votadas: ${top.map(c=>`<span class="chip">${esc(c.t.slice(0,40))} (${c.v}⭐)</span>`).join("")||"—"}</p>
+  ${qrPanel(GROUP_URL,"📝 Matriz del grupo (1 persona por grupo)")}
+  <div class="row"><button class="btn alt" onclick="distribute()" ${people().length<4?"disabled":""}>🎲 ${S.groups.length?"Volver a organizar":"Organizar"} en 4 grupos</button>
+  <span class="chip">${people().length} participantes</span>
+  <input id="pn" placeholder="Agregar a alguien que no envió aporte" style="flex:2 1 220px"><select id="pi">${instOpts()}</select><button class="btn ghost" onclick="addP()">Agregar</button></div>
+  <div class="grid">${S.groups.length?GROUPS.map((G,k)=>{const A=S.actions.filter(a=>a.g==k);return`<div class="panel g" style="--c:${G.c}"><h3>${G.n} · ${(S.groups[k]||[]).length}</h3>${(S.groups[k]||[]).map(p=>`<div style="padding:4px 0"><b>${esc(p.n)}</b><br><small>${esc(p.i)}</small></div>`).join("")}
+  <hr style="opacity:.15"><span class="chip">${A.length} acciones en la matriz</span>${A.map(a=>`<div style="margin-top:6px"><span class="chip" style="background:${LINES[a.line].c};color:#fff">${LINES[a.line].e}</span> ${esc(a.a)}</div>`).join("")}</div>`}).join(""):`<div class="panel">Pulsa <b>Organizar</b> para formar los grupos con quienes enviaron su aporte.</div>`}</div>`;
 }
-function addA(k){const a=$("a"+k).value.trim();if(!a)return;
-  S.actions.push({id:uid(),g:k,line:+$("l"+k).value,a,p:$("p"+k).value,l:$("d"+k).value,al:$("al"+k).value,per:$("pe"+k).value,r:$("r"+k).value,ev:$("ev"+k).value,ok:false});save()}
 
 function viewM4(){
   $("app").innerHTML=`<h2>Momento 4 · Validar compromisos</h2><p class="sub">Plenaria: marca como confirmadas las acciones con institución líder y deja "por validar" las que requieren aprobación institucional.</p>
@@ -211,26 +215,82 @@ function exportCsv(){
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
   const rows=[["Línea estratégica","Grupo","Acción","Población","Institución líder","Aliados","Periodo","Recursos","Evidencia","Estado"],
   ...S.actions.map(a=>[LINES[a.line].n,GROUPS[a.g].n,a.a,a.p,a.l,a.al,a.per,a.r,a.ev,a.ok?"Confirmado":"Por validar"])];
-  const b=new Blob(["﻿"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
+  const b=new Blob(["\ufeff"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
   const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Ruta-Internacionalizacion-2027.csv";l.click();
 }
 
-// Vista del celular: cada participante envía su nota; llega a la hoja como una fila propia (sin pisar a los demás).
+// ---------- Celular de participante (?celular): aporte del Momento 1 + tablero para votar ----------
+let DATA={inbox:[],votos:[],matriz:[],groups:[],step:0};
+const store=k=>JSON.parse(localStorage.getItem(KEY+k)||"{}");
+const put=(k,v)=>localStorage.setItem(KEY+k,JSON.stringify(v));
 function phoneView(){
-  ["nav","clock","prev","next"].forEach(i=>$(i).style.display="none");
-  const me=JSON.parse(localStorage.getItem(KEY+"_yo")||"{}");let sent=+me.sent||0;
+  ["clock","prev","next"].forEach(i=>$(i).style.display="none");
+  document.querySelector("header p").textContent=MODE=="celular"?"Tu celular · aporte y votación":"Matriz de tu grupo";
+  (MODE=="celular"?celularView:grupoView)();
+  const refresh=async()=>{try{DATA=await pull();MODE=="celular"?drawTab():drawGrupo()}catch(e){}};
+  refresh();setInterval(refresh,5000);
+}
+function celularView(){
+  const me=store("_yo");if(!me.id){me.id=uid();put("_yo",me)}
   $("app").innerHTML=`<h2>Momento 1 · Tu aporte</h2><p class="sub">¿Qué estrategia, recurso o experiencia de internacionalización puede aportar tu institución?</p>
   <div class="panel form"><input id="pn" class="full" placeholder="Tu nombre" value="${esc(me.n)}"><select id="pi" class="full">${instOpts()}</select>
   <textarea id="pt" class="full" rows="4" placeholder="Escribe tu oportunidad…"></textarea>
-  <button class="btn full" id="ps" style="font-size:18px">Enviar</button><div id="pm" class="full" style="font-weight:700"></div></div>`;
+  <button class="btn full" id="ps" style="font-size:18px">Enviar</button><div id="pm" class="full" style="font-weight:700"></div></div>
+  <div id="tab" style="margin-top:22px"></div>`;
   if(me.i)$("pi").value=me.i;
   $("ps").onclick=()=>{const n=$("pn").value.trim(),t=$("pt").value.trim();
     if(!n||!t){$("pm").textContent="Escribe tu nombre y tu aporte.";return}
-    const i=$("pi").value;
-    fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify({accion:"nota",id:uid(),n,i,t})})
-      .then(()=>{localStorage.setItem(KEY+"_yo",JSON.stringify({n,i,sent:++sent}));$("pt").value="";$("pm").textContent="✅ ¡Enviada! Llevas "+sent+". Puedes enviar otra."})
-      .catch(()=>{$("pm").textContent="No se pudo enviar, intenta de nuevo."})};
+    const i=$("pi").value,e={id:uid(),n,i,t};
+    post({accion:"nota",...e}).then(()=>{const m=store("_yo");put("_yo",{...m,n,i,sent:(m.sent||0)+1});
+      DATA.inbox.push(e);$("pt").value="";$("pm").textContent="✅ ¡Enviada! Puedes enviar otra o mirar el tablero abajo.";drawTab()})
+    .catch(()=>{$("pm").textContent="No se pudo enviar, intenta de nuevo."})};
+  drawTab();
 }
+// El tablero aparece cuando la persona ya envió su aporte; el voto se abre cuando el facilitador llega al Momento 2.
+function drawTab(){
+  const me=store("_yo"),el=$("tab");if(!el)return;
+  if(!me.sent){el.innerHTML="";return}
+  const mine=DATA.votos.filter(v=>v.v==me.id),open=DATA.step>=2,rest=MAX_VOTOS-mine.length;
+  el.innerHTML=`<h2>Tablero de ideas (${DATA.inbox.length})</h2><p class="sub">${open?`Vota por las ideas que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones. Te quedan <b>${rest}</b> de ${MAX_VOTOS} votos.`:"La votación se abrirá en el Momento 2. Mientras tanto, mira lo que proponen los demás."}</p>
+  ${DATA.inbox.map(c=>{const mio=mine.some(v=>v.c==c.id),n=DATA.votos.filter(v=>v.c==c.id).length;
+    return`<div class="note" style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]};transform:none">${esc(c.t)}<small>${esc(c.n)} · ${esc(c.i)}</small>
+    <button class="vote" ${mio||!open||rest<=0?"disabled":""} onclick="vota('${c.id}')">${mio?"✔ Votaste":"⭐ Votar"} · ${n}</button></div>`}).join("")}`;
+}
+function vota(c){const me=store("_yo");DATA.votos.push({c,v:me.id});drawTab();post({accion:"voto",c,v:me.id})}
+
+// ---------- Celular del grupo (?grupo): un participante por grupo llena la matriz ----------
+function grupoView(){
+  $("app").innerHTML=`<h2>Momento 3 · Matriz del grupo</h2><div id="gsel"></div><div id="gfrm"></div><div id="glist"></div>`;
+  drawGrupo();
+}
+function drawGrupo(){
+  const g=store("_grupo").g,sel=$("gsel");if(!sel)return;
+  if(g==null){
+    $("gfrm").innerHTML="";$("glist").innerHTML="";
+    sel.innerHTML=DATA.groups.length?`<p class="sub">Elige tu grupo:</p><div class="grid">${GROUPS.map((G,k)=>`<button class="btn" style="background:${G.c};font-size:20px;padding:18px" onclick="elige(${k})">${G.n}</button>`).join("")}</div>`
+      :`<p class="sub">Aún no se han organizado los grupos. Espera a que el facilitador los forme en el Momento 3.</p>`;
+    return}
+  const G=GROUPS[g],miembros=DATA.groups[g]||[];
+  sel.innerHTML=`<div class="panel g" style="--c:${G.c}"><h3>${G.n}</h3>${miembros.map(p=>`<span class="chip">${esc(p.n)} · ${esc(p.i)}</span>`).join("")||"Sin integrantes"}
+  <p><button class="btn ghost" style="font-size:12px;padding:6px 12px" onclick="put('_grupo',{});drawGrupo()">Cambiar de grupo</button></p></div>`;
+  if(!$("gf")){
+    $("gfrm").innerHTML=`<div class="panel form" id="gf" style="margin-top:14px"><select id="l" class="full">${LINES.map((l,i)=>`<option value="${i}">${l.e} ${l.n}</option>`).join("")}</select>
+    <textarea id="a" class="full" rows="3" placeholder="1. Acción propuesta"></textarea>
+    <input id="p" placeholder="2. Población participante">
+    <select id="d"><option value="">3. Institución líder</option>${instOpts()}</select>
+    <input id="al" placeholder="4. Aliados potenciales">
+    <input id="pe" placeholder="5. Periodo tentativo (ej. II semestre 2027)">
+    <input id="r" class="full" placeholder="6. Recursos requeridos">
+    <input id="ev" class="full" placeholder="Evidencia de cumplimiento">
+    <button class="btn full" style="font-size:18px" onclick="enviaA()">Enviar acción</button><div id="gm" class="full" style="font-weight:700"></div></div>`}
+  $("glist").innerHTML=`<h3 style="color:${G.c}">Acciones de tu grupo</h3>`+(DATA.matriz.filter(m=>m.g==g).map(m=>`<div class="panel" style="margin-bottom:8px"><span class="chip" style="background:${LINES[m.line].c};color:#fff">${LINES[m.line].e}</span> ${esc(m.a)}</div>`).join("")||"<small>Aún no hay acciones.</small>");
+}
+function elige(k){put("_grupo",{g:k});drawGrupo()}
+function enviaA(){const g=store("_grupo").g,a=$("a").value.trim();if(!a){$("gm").textContent="Escribe la acción propuesta.";return}
+  const m={id:uid(),g,line:+$("l").value,a,p:$("p").value,l:$("d").value,al:$("al").value,per:$("pe").value,r:$("r").value,ev:$("ev").value};
+  post({accion:"matriz",...m}).then(()=>{DATA.matriz.push(m);["a","p","d","al","pe","r","ev"].forEach(i=>$(i).value="");$("gm").textContent="✅ ¡Acción enviada! Puedes agregar otra.";drawGrupo()})
+  .catch(()=>{$("gm").textContent="No se pudo enviar, intenta de nuevo."})}
+
 PHONE?phoneView():(render(),drawTimer());
 </script>
 </body>
