@@ -27,6 +27,7 @@ nav button.on{background:linear-gradient(115deg,var(--prim),var(--rosa));color:#
 #bar{height:6px;background:linear-gradient(90deg,var(--menta),var(--sol));border-radius:3px;margin-top:8px;transition:width 1s linear}
 #end{display:none;position:fixed;inset:0;z-index:20;background:linear-gradient(135deg,var(--prim),var(--rosa),var(--coral));align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;animation:pop .4s;padding:20px}
 #end h1{font-size:clamp(40px,8vw,96px);margin:0}
+.spin{display:inline-block;width:1em;height:1em;border:3px solid #fff6;border-top-color:#fff;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-3px}@keyframes rot{to{transform:rotate(360deg)}}
 .slide{animation:slide .45s ease}@keyframes slide{from{opacity:0;transform:translateX(40px)}}
 #prev,#next{position:fixed;bottom:16px;z-index:9;border:0;border-radius:50%;width:58px;height:58px;font-size:22px;cursor:pointer;background:linear-gradient(135deg,var(--prim),var(--rosa));color:#fff;box-shadow:0 8px 20px #6c3cff66;transition:.2s}
 #prev:hover,#next:hover{transform:scale(1.12)}
@@ -66,7 +67,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 
 <button id="prev" title="Anterior" onclick="go(S.step-1)">◀</button><button id="next" title="Siguiente" onclick="go(S.step+1)">▶</button>
 <div id="clock">⏱<span id="tm">00:00</span>
   <div class="opts"><button onclick="startTimer(5)">5</button><button onclick="startTimer(10)">10</button><button onclick="startTimer(15)">15</button><button onclick="startTimer(20)">20</button><button onclick="stopTimer()" style="background:#fff3">■</button></div><div id="bar" style="width:0"></div></div>
-<div id="qrm" onclick="closeQr()" style="display:none;position:fixed;inset:0;z-index:30;background:#1d1550d9;align-items:center;justify-content:center;padding:16px"></div>
+<div id="okm" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:40;background:#1d1550d9;align-items:center;justify-content:center;padding:16px"></div>
+<div id="qrm"onclick="closeQr()" style="display:none;position:fixed;inset:0;z-index:30;background:#1d1550d9;align-items:center;justify-content:center;padding:16px"></div>
 <div id="end"><h1>⏰ ¡Se acabó el tiempo!</h1><p style="font-size:24px">Cierren la idea en la que están y pasemos al siguiente paso.</p>
   <button class="btn alt" style="font-size:20px" onclick="this.parentNode.style.display='none'">Continuar</button></div>
 <script>
@@ -240,10 +242,9 @@ function celularView(){
   if(me.i)$("pi").value=me.i;
   $("ps").onclick=()=>{const n=$("pn").value.trim(),t=$("pt").value.trim();
     if(!n||!t){$("pm").textContent="Escribe tu nombre y tu aporte.";return}
-    const i=$("pi").value,e={id:uid(),n,i,t};
-    post({accion:"nota",...e}).then(()=>{const m=store("_yo");put("_yo",{...m,n,i,sent:(m.sent||0)+1});
-      DATA.inbox.push(e);$("pt").value="";$("pm").textContent="✅ ¡Enviada! Puedes enviar otra o mirar el tablero abajo.";drawTab()})
-    .catch(()=>{$("pm").textContent="No se pudo enviar, intenta de nuevo."})};
+    const i=$("pi").value,e={id:uid(),n,i,t};$("pm").textContent="";
+    enviar($("ps"),{accion:"nota",...e},()=>{const m=store("_yo");put("_yo",{...m,n,i,sent:(m.sent||0)+1});
+      DATA.inbox.push(e);$("pt").value="";drawTab()},"¡Aporte enviado!","Ya aparece en el tablero. Puedes enviar otro aporte o ver las ideas de los demás.")};
   drawTab();
 }
 // El tablero aparece cuando la persona ya envió su aporte; el voto se abre cuando el facilitador llega al Momento 2.
@@ -282,14 +283,21 @@ function drawGrupo(){
     <input id="pe" placeholder="5. Periodo tentativo (ej. II semestre 2027)">
     <input id="r" class="full" placeholder="6. Recursos requeridos">
     <input id="ev" class="full" placeholder="Evidencia de cumplimiento">
-    <button class="btn full" style="font-size:18px" onclick="enviaA()">Enviar acción</button><div id="gm" class="full" style="font-weight:700"></div></div>`}
+    <button class="btn full" style="font-size:18px" onclick="enviaA(this)">Enviar acción</button><div id="gm" class="full" style="font-weight:700"></div></div>`}
   $("glist").innerHTML=`<h3 style="color:${G.c}">Acciones de tu grupo</h3>`+(DATA.matriz.filter(m=>m.g==g).map(m=>`<div class="panel" style="margin-bottom:8px"><span class="chip" style="background:${LINES[m.line].c};color:#fff">${LINES[m.line].e}</span> ${esc(m.a)}</div>`).join("")||"<small>Aún no hay acciones.</small>");
 }
 function elige(k){put("_grupo",{g:k});drawGrupo()}
-function enviaA(){const g=store("_grupo").g,a=$("a").value.trim();if(!a){$("gm").textContent="Escribe la acción propuesta.";return}
-  const m={id:uid(),g,line:+$("l").value,a,p:$("p").value,l:$("d").value,al:$("al").value,per:$("pe").value,r:$("r").value,ev:$("ev").value};
-  post({accion:"matriz",...m}).then(()=>{DATA.matriz.push(m);["a","p","d","al","pe","r","ev"].forEach(i=>$(i).value="");$("gm").textContent="✅ ¡Acción enviada! Puedes agregar otra.";drawGrupo()})
-  .catch(()=>{$("gm").textContent="No se pudo enviar, intenta de nuevo."})}
+function enviaA(btn){const g=store("_grupo").g,a=$("a").value.trim();if(!a){$("gm").textContent="Escribe la acción propuesta.";return}
+  const m={id:uid(),g,line:+$("l").value,a,p:$("p").value,l:$("d").value,al:$("al").value,per:$("pe").value,r:$("r").value,ev:$("ev").value};$("gm").textContent="";
+  enviar(btn,{accion:"matriz",...m},()=>{DATA.matriz.push(m);["a","p","d","al","pe","r","ev"].forEach(i=>$(i).value="");drawGrupo()},"¡Acción enviada!","Quedó registrada en la matriz de tu grupo. Puedes agregar otra.")}
+// Envío con el botón bloqueado (evita duplicados), indicador "Enviando…" y confirmación en un modal.
+function enviar(btn,payload,onOk,titulo,detalle){
+  if(btn.disabled)return;
+  const txt=btn.textContent;btn.disabled=true;btn.innerHTML='<span class="spin"></span> Enviando…';
+  Promise.all([post(payload),new Promise(r=>setTimeout(r,700))])
+    .then(()=>{onOk();$("okm").innerHTML=`<div class="panel" style="text-align:center;max-width:420px" onclick="event.stopPropagation()"><div style="font-size:64px">✅</div><h2>${titulo}</h2><p>${detalle}</p><button class="btn" onclick="$('okm').style.display='none'">Listo</button></div>`;$("okm").style.display="flex"})
+    .catch(()=>{$("okm").innerHTML=`<div class="panel" style="text-align:center;max-width:420px" onclick="event.stopPropagation()"><div style="font-size:64px">⚠️</div><h2>No se pudo enviar</h2><p>Revisa tu conexión e intenta de nuevo. Tu texto sigue ahí.</p><button class="btn" onclick="$('okm').style.display='none'">Entendido</button></div>`;$("okm").style.display="flex"})
+    .finally(()=>{btn.disabled=false;btn.textContent=txt})}
 
 PHONE?phoneView():(render(),drawTimer());
 </script>
