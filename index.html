@@ -167,8 +167,7 @@ function reset(){if(!confirm("¿Borrar todos los datos del taller?"))return;
 function viewEnd(){
   $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">🎉</div><h2 style="font-size:clamp(32px,6vw,60px)">¡Gracias por construir la Ruta 2027!</h2>
   <p class="sub" style="font-size:20px">Esto es lo que logramos hoy</p></div>
-  <div class="grid">${[[people().length,"participantes"],[S.cards.length,"oportunidades identificadas"],[S.actions.length,"acciones diseñadas"],[GROUPS.length,"grupos de trabajo"]].map(x=>`<div class="panel" style="text-align:center"><div class="big">${x[0]}</div>${x[1]}</div>`).join("")}</div>
-  <p style="text-align:center;margin-top:24px"><button class="btn alt" style="font-size:20px" onclick="exportCsv()">⬇ Descargar la matriz (Excel/CSV)</button></p>`;
+  <div class="grid">${[[people().length,"participantes"],[S.cards.length,"oportunidades identificadas"],[S.actions.length,"acciones diseñadas"],[GROUPS.length,"grupos de trabajo"]].map(x=>`<div class="panel" style="text-align:center"><div class="big">${x[0]}</div>${x[1]}</div>`).join("")}</div>`;
 }
 
 // El QR chico abre un modal con el QR grande, para proyectarlo y escanearlo desde lejos.
@@ -216,7 +215,7 @@ function viewM3(){
 
 function viewM4(){
   $("app").innerHTML=`<h2>Momento 4 · Validar compromisos</h2><p class="sub">Plenaria: cada grupo presenta sus acciones. Haz clic en una tarjeta para ver toda la información que registraron.</p>
-  <div class="row"><button class="btn alt" onclick="exportCsv()">⬇ Exportar matriz (Excel/CSV)</button><span class="chip">${S.actions.length} acciones</span></div>
+  <div class="row"><span class="chip">${S.actions.length} acciones</span></div>
   ${LINES.map((l,k)=>{const A=S.actions.filter(a=>a.line==k);return`<div class="panel g" style="--c:${l.c};margin-bottom:14px"><h3>${l.e} ${l.n} (${A.length})</h3>
   <div class="grid">${A.map(a=>`<div class="note" style="background:#fff;border-left:8px solid ${GROUPS[a.g].c};border-radius:12px;cursor:pointer;transform:none" onclick="openA('${a.id}')">
   <span class="chip" style="background:${GROUPS[a.g].c};color:#fff">${GROUPS[a.g].n}</span><div style="margin-top:6px;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${esc(a.a)}</div>
