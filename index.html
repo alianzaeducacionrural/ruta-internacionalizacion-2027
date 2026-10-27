@@ -115,7 +115,9 @@ if(!PHONE)setInterval(async()=>{try{
   if(ch)save();
 }catch(e){}},5000);
 
-function go(i){S.step=Math.max(0,Math.min(STEPS.length-1,i));save();
+function go(i){S.step=Math.max(0,Math.min(STEPS.length-1,i));
+  // Al llegar al Momento 3 los grupos se forman solos (si ya existen no se reordenan; para eso está el botón).
+  if(S.step==3&&!S.groups.length&&people().length)distribute();else save();
   const a=$("app");a.classList.remove("slide");void a.offsetWidth;a.classList.add("slide");scrollTo(0,0)}
 // Navegación tipo presentación: flechas del teclado o botones ◀ ▶
 document.addEventListener("keydown",e=>{if(PHONE||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
