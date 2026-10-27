@@ -163,10 +163,9 @@ function viewHome(){
 function reset(){if(!confirm("¿Borrar todos los datos del taller?"))return;
   post({accion:"limpiar"}).catch(()=>{}).finally(()=>{localStorage.removeItem(KEY);location.reload()})}
 function viewEnd(){
-  const ok=S.actions.filter(a=>a.ok).length;
   $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">🎉</div><h2 style="font-size:clamp(32px,6vw,60px)">¡Gracias por construir la Ruta 2027!</h2>
   <p class="sub" style="font-size:20px">Esto es lo que logramos hoy</p></div>
-  <div class="grid">${[[people().length,"participantes"],[S.cards.length,"oportunidades identificadas"],[S.actions.length,"acciones diseñadas"],[ok,"acciones confirmadas"]].map(x=>`<div class="panel" style="text-align:center"><div class="big">${x[0]}</div>${x[1]}</div>`).join("")}</div>
+  <div class="grid">${[[people().length,"participantes"],[S.cards.length,"oportunidades identificadas"],[S.actions.length,"acciones diseñadas"],[GROUPS.length,"grupos de trabajo"]].map(x=>`<div class="panel" style="text-align:center"><div class="big">${x[0]}</div>${x[1]}</div>`).join("")}</div>
   <p style="text-align:center;margin-top:24px"><button class="btn alt" style="font-size:20px" onclick="exportCsv()">⬇ Descargar la matriz (Excel/CSV)</button></p>`;
 }
 
@@ -208,17 +207,24 @@ function viewM3(){
 }
 
 function viewM4(){
-  $("app").innerHTML=`<h2>Momento 4 · Validar compromisos</h2><p class="sub">Plenaria: marca como confirmadas las acciones con institución líder y deja "por validar" las que requieren aprobación institucional.</p>
-  <div class="row"><button class="btn alt" onclick="exportCsv()">⬇ Exportar matriz (Excel/CSV)</button><span class="chip">${S.actions.filter(a=>a.ok).length} confirmadas</span><span class="chip">${S.actions.filter(a=>!a.ok).length} por validar</span></div>
+  $("app").innerHTML=`<h2>Momento 4 · Validar compromisos</h2><p class="sub">Plenaria: cada grupo presenta sus acciones. Haz clic en una tarjeta para ver toda la información que registraron.</p>
+  <div class="row"><button class="btn alt" onclick="exportCsv()">⬇ Exportar matriz (Excel/CSV)</button><span class="chip">${S.actions.length} acciones</span></div>
   ${LINES.map((l,k)=>{const A=S.actions.filter(a=>a.line==k);return`<div class="panel g" style="--c:${l.c};margin-bottom:14px"><h3>${l.e} ${l.n} (${A.length})</h3>
-  ${A.map(a=>`<div style="padding:8px 0;border-top:1px solid #0002"><b>${esc(a.a)}</b> <button class="st ${a.ok?"ok":"pend"}" onclick="tog('${a.id}')">${a.ok?"✔ Confirmado":"⏳ Por validar"}</button>
-  <br><small>${GROUPS[a.g].n} · Población: ${esc(a.p)||"—"} · Líder: ${esc(a.l)||"—"} · Aliados: ${esc(a.al)||"—"} · Periodo: ${esc(a.per)||"—"} · Recursos: ${esc(a.r)||"—"} · Evidencia: ${esc(a.ev)||"—"}</small></div>`).join("")||"<small>Sin acciones aún</small>"}</div>`}).join("")}`;
+  <div class="grid">${A.map(a=>`<div class="note" style="background:#fff;border-left:8px solid ${GROUPS[a.g].c};border-radius:12px;cursor:pointer;transform:none" onclick="openA('${a.id}')">
+  <span class="chip" style="background:${GROUPS[a.g].c};color:#fff">${GROUPS[a.g].n}</span><div style="margin-top:6px;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${esc(a.a)}</div>
+  <small>🏛️ ${esc(a.l)||"Sin institución líder"}</small></div>`).join("")||"<small>Sin acciones aún</small>"}</div></div>`}).join("")}`;
 }
-function tog(id){const a=S.actions.find(a=>a.id==id);a.ok=!a.ok;save()}
+// Modal con todo lo que el grupo registró en la matriz.
+function openA(id){const a=S.actions.find(a=>a.id==id);if(!a)return;const L=LINES[a.line],G=GROUPS[a.g];
+  const f=(t,v)=>`<div style="margin-top:10px"><small style="font-weight:700;opacity:.7">${t}</small><div>${esc(v)||"—"}</div></div>`;
+  $("okm").innerHTML=`<div class="panel" style="max-width:640px;width:100%;max-height:90vh;overflow:auto;border-top:10px solid ${G.c}" onclick="event.stopPropagation()">
+  <span class="chip" style="background:${G.c};color:#fff">${G.n}</span><span class="chip" style="background:${L.c};color:#fff">${L.e} ${L.n}</span>
+  <h2 style="margin-top:8px">${esc(a.a)}</h2>${f("👥 Población participante",a.p)}${f("🏛️ Institución líder",a.l)}${f("🤝 Aliados potenciales",a.al)}${f("📅 Periodo tentativo",a.per)}${f("🧰 Recursos requeridos",a.r)}${f("✅ Evidencia de cumplimiento",a.ev)}
+  <p style="text-align:right;margin-bottom:0"><button class="btn" onclick="$('okm').style.display='none'">Cerrar</button></p></div>`;$("okm").style.display="flex"}
 function exportCsv(){
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=[["Línea estratégica","Grupo","Acción","Población","Institución líder","Aliados","Periodo","Recursos","Evidencia","Estado"],
-  ...S.actions.map(a=>[LINES[a.line].n,GROUPS[a.g].n,a.a,a.p,a.l,a.al,a.per,a.r,a.ev,a.ok?"Confirmado":"Por validar"])];
+  const rows=[["Línea estratégica","Grupo","Acción","Población","Institución líder","Aliados","Periodo","Recursos","Evidencia"],
+  ...S.actions.map(a=>[LINES[a.line].n,GROUPS[a.g].n,a.a,a.p,a.l,a.al,a.per,a.r,a.ev])];
   const b=new Blob(["\ufeff"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
   const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Ruta-Internacionalizacion-2027.csv";l.click();
 }
