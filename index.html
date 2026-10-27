@@ -44,7 +44,7 @@ h2{margin:0 0 4px;font-size:clamp(24px,3.2vw,36px);font-weight:800;color:var(--p
 .btn.alt{background:linear-gradient(115deg,var(--sol),#ff9f1a);color:var(--noche);box-shadow:0 6px 16px #ffb30055}.btn.ghost{background:#ece8ff;color:var(--prim);box-shadow:none}
 input,select,textarea{font:inherit;padding:10px 12px;border-radius:12px;border:2px solid #ddd6ff;background:#fff;color:var(--ink);width:100%;outline:0;transition:.2s}
 input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 0 4px #6c3cff22}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.row>*{width:auto;flex:1 1 180px}.row .btn{flex:0 0 auto}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.row>*{width:auto;flex:1 1 180px}.row .btn,.row .chip{flex:0 0 auto}
 .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
 .grid.f{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}/* listas de notas: una nota sola no se estira a todo el ancho */
 .panel{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--sombra)}
@@ -56,6 +56,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 
 .more{border:0;background:#ffffffb3;border-radius:999px;margin-top:6px;padding:4px 12px;font-weight:700;font-size:13px;font-family:inherit;cursor:pointer;color:var(--prim)}
 .note small{display:block;opacity:.7;margin-top:6px;font-weight:700}
 @keyframes pop{from{transform:scale(.6) rotate(-6deg);opacity:0}}
+.m2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.m2r{position:sticky;top:12px;max-height:calc(100vh - 235px);overflow:auto}/* deja libre la esquina del cronómetro */
+@media (max-width:1000px){.m2{grid-template-columns:1fr}.m2r{position:static;max-height:none}}
 .cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
 .col{background:#ffffffd9;border-radius:22px;min-height:200px;padding:12px;border-top:10px solid var(--c);box-shadow:var(--sombra)}
 .col.over{outline:4px dashed var(--c);background:#fff} .col h4{margin:0 0 8px;color:var(--c);font-weight:800}
@@ -78,7 +81,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 
   <button class="btn alt" style="font-size:20px" onclick="this.parentNode.style.display='none'">Continuar</button></div>
 <script>
 const INST=["Universidad de Caldas","Universidad Autónoma de Manizales","Universidad Católica de Manizales","Universidad de Manizales","UNIOC","Uniminuto","UNAD","SED - Secretaría de Educación","SEM - Secretaría de Educación"];
-const LINES=[{n:"Internacionalización del currículo",c:"#6c3cff",e:"📚"},{n:"Competencias globales e interculturales",c:"#ff4f6d",e:"🌎"},{n:"Intercambio virtual y aulas espejo",c:"#1e90ff",e:"💻"},{n:"Cooperación e innovación rural",c:"#00b894",e:"🌱"},{n:"Movilidad y redes académicas",c:"#ff9f1a",e:"✈️"}];
+// Las líneas estratégicas no están predefinidas: el facilitador las crea en el Momento 2 (S.lines) y los celulares las leen de la hoja.
+const COLORS=["#6c3cff","#ff4f6d","#1e90ff","#00b894","#ff9f1a","#ff5fb2","#7b3fa0","#12b5cb"];
+const lines=()=>(PHONE?DATA.lines:S.lines)||[];
+const lineOf=id=>lines().find(l=>l.id==id)||{id:null,n:"Sin línea",c:"#888"};
 const GROUPS=[{n:"Grupo Origen",c:"#ff4f6d"},{n:"Grupo Cosecha",c:"#00b894"},{n:"Grupo Cumbre",c:"#6c3cff"},{n:"Grupo Raíz",c:"#ff9f1a"}];
 // Pantallas en orden: la 0 es la portada (sin cronómetro).
 const STEPS=[{t:"Inicio"},{t:"Momento 1"},{t:"Momento 2"},{t:"Momento 3"},{t:"Momento 4"},{t:"Cierre"}];
@@ -88,7 +94,7 @@ const MAX_VOTOS=3;
 const KEY="ruta2027";
 const MODE=new URLSearchParams(location.search).has("celular")?"celular":new URLSearchParams(location.search).has("grupo")?"grupo":"";
 const PHONE=!!MODE;
-let S=JSON.parse(localStorage.getItem(KEY)||"null")||{step:0,people:[],groups:[],cards:[],actions:[]};
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||{step:0,people:[],groups:[],cards:[],actions:[],lines:[]};
 let left=0,tick=null,total=0;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -100,7 +106,7 @@ const post=o=>fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const instOpts=()=>INST.map(i=>`<option>${esc(i)}</option>`).join("");
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
-const pull=async()=>({inbox:[],votos:[],matriz:[],groups:[],step:0,...await(await fetch(SHEET_URL)).json()});
+const pull=async()=>({inbox:[],votos:[],matriz:[],groups:[],lines:[],step:0,...await(await fetch(SHEET_URL)).json()});
 const qr=(url,px)=>`<img width="${px}" height="${px}" alt="QR" style="border-radius:12px" src="https://api.qrserver.com/v1/create-qr-code/?size=${px*2}x${px*2}&data=${encodeURIComponent(url)}">`;
 function copy(url,btn){navigator.clipboard.writeText(url).then(()=>{btn.textContent="✅ ¡Copiado!";setTimeout(()=>btn.textContent="📋 Copiar enlace",1800)})}
 
@@ -161,7 +167,7 @@ function viewHome(){
   $("app").innerHTML=`<div style="text-align:center;padding:0 0 3vh"><div style="font-size:clamp(36px,8vh,72px)">🌎✨</div>
   <h2 style="font-size:clamp(28px,6.5vh,64px)">Ruta de Internacionalización 2027</h2>
   <p class="sub" style="font-size:clamp(14px,2.6vh,24px)">Taller de cocreación · Universidades y Secretarías de Educación · Estudiantes rurales</p></div>
-  <div class="grid">${[["📚","Identificar oportunidades","Cada universidad aporta estrategias, recursos y experiencias."],["🧩","Agrupar y priorizar","Organizamos las ideas en líneas estratégicas y votamos."],["🛠️","Diseñar las acciones","Equipos mixtos llenan la matriz de la Ruta."],["🤝","Validar compromisos","Plenaria: coincidencias, líderes y acuerdos."]].map((m,k)=>`<div class="panel g" style="--c:${LINES[k].c};text-align:center"><div style="font-size:44px">${m[0]}</div><h3>Momento ${k+1}</h3><b>${m[1]}</b><p class="sub" style="margin:6px 0 0">${m[2]}</p></div>`).join("")}</div>
+  <div class="grid">${[["📚","Identificar oportunidades","Cada universidad aporta estrategias, recursos y experiencias."],["🧩","Agrupar y priorizar","Organizamos las ideas en líneas estratégicas y votamos."],["🛠️","Diseñar las acciones","Equipos mixtos llenan la matriz de la Ruta."],["🤝","Validar compromisos","Plenaria: coincidencias, líderes y acuerdos."]].map((m,k)=>`<div class="panel g" style="--c:${COLORS[k]};text-align:center"><div style="font-size:44px">${m[0]}</div><h3>Momento ${k+1}</h3><b>${m[1]}</b><p class="sub" style="margin:6px 0 0">${m[2]}</p></div>`).join("")}</div>
   <p style="text-align:center;margin:3vh 0 1vh"><button class="btn alt" style="font-size:clamp(16px,3vh,22px);padding:1.4vh 32px" onclick="go(1)">Comenzar →</button></p>
   <p style="text-align:center;margin:0"><button class="btn ghost" style="font-size:12px;padding:6px 14px;opacity:.6" onclick="reset()">Reiniciar taller (borra todo)</button></p>`;
 }
@@ -198,13 +204,29 @@ function openNote(id){const c=S.cards.find(c=>c.id==id)||DATA.inbox.find(c=>c.id
   <p style="text-align:right;margin-bottom:0"><button class="btn" onclick="$('okm').style.display='none'">Cerrar</button></p></div>`;$("okm").style.display="flex"}
 
 function viewM2(){
-  const pool=S.cards.filter(c=>c.line==null);
-  $("app").innerHTML=`<h2>Momento 2 · Agrupar y priorizar</h2><p class="sub">Arrastra cada nota a su línea estratégica. Los participantes votan desde su celular (${MAX_VOTOS} votos c/u) por las ideas que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones.</p>
-  <div class="col" style="--c:#888;margin-bottom:14px" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,null)"><h4>Sin clasificar (${pool.length})</h4><div class="grid f">${pool.map(noteHtml).join("")}</div></div>
-  <div class="cols">${LINES.map((l,k)=>`<div class="col" style="--c:${l.c}" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,${k})"><h4>${l.e} ${l.n}</h4>${S.cards.filter(c=>c.line===k).sort((a,b)=>b.v-a.v).map(noteHtml).join("")}</div>`).join("")}</div>`;
+  const pool=S.cards.filter(c=>!lines().some(l=>l.id==c.line));
+  const drag=k=>`ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,${k})"`;
+  $("app").innerHTML=`<h2>Momento 2 · Agrupar y priorizar</h2><p class="sub">Define con los participantes las líneas estratégicas con el botón <b>＋</b> y arrastra las tarjetas del recuadro de la derecha a la línea que le corresponda. Los participantes votan desde su celular (${MAX_VOTOS} votos c/u) por las ideas que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones.</p>
+  <div class="m2"><div class="m2l">
+    <div class="row"><button class="btn alt" onclick="editLineas()">＋ Línea estratégica</button><span class="chip">${lines().length} líneas</span></div>
+    ${lines().length?`<div class="cols">${lines().map(l=>`<div class="col" style="--c:${l.c}" ${drag("'"+l.id+"'")}><h4>${esc(l.n)}</h4>${S.cards.filter(c=>c.line===l.id).sort((a,b)=>b.v-a.v).map(noteHtml).join("")}</div>`).join("")}</div>`
+    :`<div class="panel">Aún no hay líneas estratégicas. Pulsa <b>＋ Línea estratégica</b> para crear la primera.</div>`}
+  </div>
+  <aside class="col m2r" style="--c:#888" ${drag("null")}><h4>Tarjetas sin clasificar (${pool.length})</h4>${pool.map(noteHtml).join("")||"<small>¡Todas las tarjetas están clasificadas!</small>"}</aside></div>`;
 }
 function dov(e){e.preventDefault();e.currentTarget.classList.add("over")}
 function drop(e,k){e.preventDefault();const c=S.cards.find(c=>c.id==e.dataTransfer.getData("t"));if(c){c.line=k;save()}}
+// Modal para crear o quitar líneas estratégicas; queda abierto para agregar varias seguidas.
+function editLineas(){
+  $("okm").innerHTML=`<div class="panel" style="max-width:560px;width:100%;max-height:90vh;overflow:auto" onclick="event.stopPropagation()"><h2>Líneas estratégicas</h2>
+  <div class="row" style="margin-bottom:8px"><input id="ln" placeholder="Nombre de la línea estratégica" onkeydown="if(event.key=='Enter')addLinea()"><button class="btn" onclick="addLinea()">＋ Agregar</button></div>
+  <div>${lines().map(l=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #0001"><span style="width:14px;height:14px;border-radius:50%;background:${l.c}"></span><span style="flex:1">${esc(l.n)}</span><button class="vote" title="Quitar" onclick="delLinea('${l.id}')">✕</button></div>`).join("")||"<small>Aún no hay líneas.</small>"}</div>
+  <p style="text-align:right;margin-bottom:0"><button class="btn" onclick="$('okm').style.display='none'">Listo</button></p></div>`;
+  $("okm").style.display="flex";setTimeout(()=>$("ln")&&$("ln").focus(),50)}
+function addLinea(){const n=$("ln").value.trim();if(!n)return;S.lines=S.lines||[];S.lines.push({id:uid(),n,c:COLORS[S.lines.length%COLORS.length]});save();editLineas()}
+function delLinea(id){const n=S.cards.filter(c=>c.line===id).length;
+  if(n&&!confirm("Esta línea tiene "+n+" nota(s); volverán a «Sin clasificar». ¿Quitarla?"))return;
+  S.lines=S.lines.filter(l=>l.id!=id);S.cards.forEach(c=>{if(c.line===id)c.line=null});save();editLineas()}
 
 function viewM3(){
   const top=S.cards.filter(c=>c.v>0).sort((a,b)=>b.v-a.v).slice(0,6);
@@ -213,34 +235,34 @@ function viewM3(){
   <span class="chip">${people().length} participantes</span>
   <input id="pn" placeholder="Agregar a alguien que no envió aporte" style="flex:2 1 220px"><select id="pi">${instOpts()}</select><button class="btn ghost" onclick="addP()">Agregar</button></div>
   <div class="grid">${S.groups.length?GROUPS.map((G,k)=>{const A=S.actions.filter(a=>a.g==k);return`<div class="panel g" style="--c:${G.c}"><h3>${G.n} · ${(S.groups[k]||[]).length}</h3>${(S.groups[k]||[]).map(p=>`<div style="padding:4px 0"><b>${esc(p.n)}</b><br><small>${esc(p.i)}</small></div>`).join("")}
-  <hr style="opacity:.15"><span class="chip">${A.length} acciones en la matriz</span>${A.map(a=>`<div style="margin-top:6px"><span class="chip" style="background:${LINES[a.line].c};color:#fff">${LINES[a.line].e}</span> ${esc(a.a)}</div>`).join("")}</div>`}).join(""):`<div class="panel">Pulsa <b>Organizar</b> para formar los grupos con quienes enviaron su aporte.</div>`}</div>`;
+  <hr style="opacity:.15"><span class="chip">${A.length} acciones en la matriz</span>${A.map(a=>`<div style="margin-top:6px"><span class="chip" style="background:${lineOf(a.line).c};color:#fff">${esc(lineOf(a.line).n)}</span> ${esc(a.a)}</div>`).join("")}</div>`}).join(""):`<div class="panel">Pulsa <b>Organizar</b> para formar los grupos con quienes enviaron su aporte.</div>`}</div>`;
 }
 
 function viewM4(){
   $("app").innerHTML=`<h2>Momento 4 · Validar compromisos</h2><p class="sub">Plenaria: cada grupo presenta sus acciones. Haz clic en una tarjeta para ver toda la información que registraron.</p>
   <div class="row"><span class="chip">${S.actions.length} acciones</span></div>
-  ${LINES.map((l,k)=>{const A=S.actions.filter(a=>a.line==k);return`<div class="panel g" style="--c:${l.c};margin-bottom:14px"><h3>${l.e} ${l.n} (${A.length})</h3>
+  ${[...lines(),...(S.actions.some(a=>!lines().some(l=>l.id==a.line))?[{id:null,n:"Sin línea",c:"#888"}]:[])].map(l=>{const A=S.actions.filter(a=>l.id==null?!lines().some(x=>x.id==a.line):a.line==l.id);return`<div class="panel g" style="--c:${l.c};margin-bottom:14px"><h3>${esc(l.n)} (${A.length})</h3>
   <div class="grid f">${A.map(a=>`<div class="note" style="background:#fff;border-left:8px solid ${GROUPS[a.g].c};border-radius:12px;cursor:pointer;transform:none" onclick="openA('${a.id}')">
   <span class="chip" style="background:${GROUPS[a.g].c};color:#fff">${GROUPS[a.g].n}</span><div style="margin-top:6px;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${esc(a.a)}</div>
   <small>🏛️ ${esc(a.l)||"Sin institución líder"}</small></div>`).join("")||"<small>Sin acciones aún</small>"}</div></div>`}).join("")}`;
 }
 // Modal con todo lo que el grupo registró en la matriz.
-function openA(id){const a=S.actions.find(a=>a.id==id);if(!a)return;const L=LINES[a.line],G=GROUPS[a.g];
+function openA(id){const a=S.actions.find(a=>a.id==id);if(!a)return;const L=lineOf(a.line),G=GROUPS[a.g];
   const f=(t,v)=>`<div style="margin-top:10px"><small style="font-weight:700;opacity:.7">${t}</small><div>${esc(v)||"—"}</div></div>`;
   $("okm").innerHTML=`<div class="panel" style="max-width:640px;width:100%;max-height:90vh;overflow:auto;border-top:10px solid ${G.c}" onclick="event.stopPropagation()">
-  <span class="chip" style="background:${G.c};color:#fff">${G.n}</span><span class="chip" style="background:${L.c};color:#fff">${L.e} ${L.n}</span>
+  <span class="chip" style="background:${G.c};color:#fff">${G.n}</span><span class="chip" style="background:${L.c};color:#fff">${esc(L.n)}</span>
   <h2 style="margin-top:8px">${esc(a.a)}</h2>${f("👥 Población participante",a.p)}${f("🏛️ Institución líder",a.l)}${f("🤝 Aliados potenciales",a.al)}${f("📅 Periodo tentativo",a.per)}${f("🧰 Recursos requeridos",a.r)}${f("✅ Evidencia de cumplimiento",a.ev)}
   <p style="text-align:right;margin-bottom:0"><button class="btn" onclick="$('okm').style.display='none'">Cerrar</button></p></div>`;$("okm").style.display="flex"}
 function exportCsv(){
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
   const rows=[["Línea estratégica","Grupo","Acción","Población","Institución líder","Aliados","Periodo","Recursos","Evidencia"],
-  ...S.actions.map(a=>[LINES[a.line].n,GROUPS[a.g].n,a.a,a.p,a.l,a.al,a.per,a.r,a.ev])];
+  ...S.actions.map(a=>[lineOf(a.line).n,GROUPS[a.g].n,a.a,a.p,a.l,a.al,a.per,a.r,a.ev])];
   const b=new Blob(["\ufeff"+rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
   const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="Ruta-Internacionalizacion-2027.csv";l.click();
 }
 
 // ---------- Celular de participante (?celular): aporte del Momento 1 + tablero para votar ----------
-let DATA={inbox:[],votos:[],matriz:[],groups:[],step:0};
+let DATA={inbox:[],votos:[],matriz:[],groups:[],lines:[],step:0};
 const store=k=>JSON.parse(localStorage.getItem(KEY+k)||"{}");
 const put=(k,v)=>localStorage.setItem(KEY+k,JSON.stringify(v));
 function phoneView(){
@@ -293,7 +315,7 @@ function drawGrupo(){
   sel.innerHTML=`<div class="panel g" style="--c:${G.c}"><h3>${G.n}</h3>${miembros.map(p=>`<span class="chip">${esc(p.n)} · ${esc(p.i)}</span>`).join("")||"Sin integrantes"}
   <p><button class="btn ghost" style="font-size:12px;padding:6px 12px" onclick="put('_grupo',{});drawGrupo()">Cambiar de grupo</button></p></div>`;
   if(!$("gf")){
-    $("gfrm").innerHTML=`<div class="panel form" id="gf" style="margin-top:14px"><select id="l" class="full">${LINES.map((l,i)=>`<option value="${i}">${l.e} ${l.n}</option>`).join("")}</select>
+    $("gfrm").innerHTML=`<div class="panel form" id="gf" style="margin-top:14px"><select id="l" class="full"></select>
     <textarea id="a" class="full" rows="3" placeholder="1. Acción propuesta"></textarea>
     <input id="p" placeholder="2. Población participante">
     <select id="d"><option value="">3. Institución líder</option>${instOpts()}</select>
@@ -302,11 +324,12 @@ function drawGrupo(){
     <input id="r" class="full" placeholder="6. Recursos requeridos">
     <input id="ev" class="full" placeholder="Evidencia de cumplimiento">
     <button class="btn full" style="font-size:18px" onclick="enviaA(this)">Enviar acción</button><div id="gm" class="full" style="font-weight:700"></div></div>`}
-  $("glist").innerHTML=`<h3 style="color:${G.c}">Acciones de tu grupo</h3>`+(DATA.matriz.filter(m=>m.g==g).map(m=>`<div class="panel" style="margin-bottom:8px"><span class="chip" style="background:${LINES[m.line].c};color:#fff">${LINES[m.line].e}</span> ${esc(m.a)}</div>`).join("")||"<small>Aún no hay acciones.</small>");
+  const cur=$("l").value;$("l").innerHTML=lines().map(l=>`<option value="${l.id}">${esc(l.n)}</option>`).join("");if(cur&&lines().some(l=>l.id==cur))$("l").value=cur;
+  $("glist").innerHTML=`<h3 style="color:${G.c}">Acciones de tu grupo</h3>`+(DATA.matriz.filter(m=>m.g==g).map(m=>`<div class="panel" style="margin-bottom:8px"><span class="chip" style="background:${lineOf(m.line).c};color:#fff">${esc(lineOf(m.line).n)}</span> ${esc(m.a)}</div>`).join("")||"<small>Aún no hay acciones.</small>");
 }
 function elige(k){put("_grupo",{g:k});drawGrupo()}
-function enviaA(btn){const g=store("_grupo").g,a=$("a").value.trim();if(!a){$("gm").textContent="Escribe la acción propuesta.";return}
-  const m={id:uid(),g,line:+$("l").value,a,p:$("p").value,l:$("d").value,al:$("al").value,per:$("pe").value,r:$("r").value,ev:$("ev").value};$("gm").textContent="";
+function enviaA(btn){const g=store("_grupo").g,a=$("a").value.trim();if(!$("l").value){$("gm").textContent="El facilitador aún no define las líneas estratégicas.";return}if(!a){$("gm").textContent="Escribe la acción propuesta.";return}
+  const m={id:uid(),g,line:$("l").value,a,p:$("p").value,l:$("d").value,al:$("al").value,per:$("pe").value,r:$("r").value,ev:$("ev").value};$("gm").textContent="";
   enviar(btn,{accion:"matriz",...m},()=>{DATA.matriz.push(m);["a","p","d","al","pe","r","ev"].forEach(i=>$(i).value="");drawGrupo()},"¡Acción enviada!","Quedó registrada en la matriz de tu grupo. Puedes agregar otra.")}
 // Envío con el botón bloqueado (evita duplicados), indicador "Enviando…" y confirmación en un modal.
 function enviar(btn,payload,onOk,titulo,detalle){
