@@ -186,8 +186,14 @@ function viewHome(){
   <h2 style="font-size:clamp(28px,6.5vh,64px)">Ruta de Internacionalización 2027</h2>
   <p class="sub" style="font-size:clamp(14px,2.6vh,24px)">Taller de cocreación · Universidades y Secretarías de Educación · Estudiantes rurales</p></div>
   <div class="grid">${[["📚","Identificar oportunidades","Cada universidad aporta estrategias, recursos y experiencias."],["🧩","Agrupar y priorizar","Organizamos las ideas en líneas estratégicas y votamos."],["🛠️","Diseñar las acciones","Equipos mixtos llenan la matriz de la Ruta."],["🤝","Validar compromisos","Plenaria: coincidencias, líderes y acuerdos."]].map((m,k)=>`<div class="panel g" style="--c:${COLORS[k]};text-align:center"><div style="font-size:44px">${m[0]}</div><h3>Momento ${k+1}</h3><b>${m[1]}</b><p class="sub" style="margin:6px 0 0">${m[2]}</p></div>`).join("")}</div>
-  <p style="text-align:center;margin:3vh 0 1vh"><button class="btn alt" style="font-size:clamp(16px,3vh,22px);padding:1.4vh 32px" onclick="go(1)">Comenzar →</button></p>`;
+  <p style="text-align:center;margin:3vh 0 1vh"><button class="btn alt" style="font-size:clamp(16px,3vh,22px);padding:1.4vh 32px" onclick="go(1)">Comenzar →</button></p>
+  ${hasData()?`<p style="text-align:center;margin:0"><button class="btn ghost" style="font-size:13px;padding:6px 16px" onclick="borrarTodo(this)">🗑️ Borrar todos los datos</button></p>`:""}`;
 }
+// El botón solo aparece cuando hay algo que borrar. "limpiar" vacía la hoja y crea una época nueva: las demás pestañas descartan sus datos solas.
+const hasData=()=>!!(S.cards.length||S.actions.length||(S.lines||[]).length||S.groups.length||S.people.length);
+function borrarTodo(btn){if(!confirm("¿Borrar TODOS los datos del taller (aportes, votos, líneas, grupos y matriz)? No se puede deshacer."))return;
+  btn.disabled=true;btn.innerHTML='<span class="spin" style="border-color:#6c3cff55;border-top-color:#6c3cff"></span> Borrando…';
+  post({accion:"limpiar"}).catch(()=>{}).finally(()=>{localStorage.removeItem(KEY);location.reload()})}
 function viewEnd(){
   $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">🎉</div><h2 style="font-size:clamp(32px,6vw,60px)">¡Gracias por construir la Ruta 2027!</h2>
   <p class="sub" style="font-size:20px">Esto es lo que logramos hoy</p></div>
