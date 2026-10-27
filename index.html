@@ -128,6 +128,8 @@ if(!PHONE)setInterval(async()=>{try{
   const r=await pull(),{inbox,votos,matriz}=r;delete r.inbox;delete r.votos;delete r.matriz;
   if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
   let ch=false;
+  // La hoja quedó vacía (taller reiniciado) y lo local tiene más de 30 s: se descarta para no reescribir datos viejos.
+  if(!r.ts&&S.ts&&Date.now()-S.ts>30000){localStorage.removeItem(KEY);S={step:0,people:[],groups:[],cards:[],actions:[],lines:[]};render();return}
   if(r.ts>(S.ts||0)){S=r;ch=true}
   inbox.filter(e=>!S.cards.some(c=>c.id==e.id)).forEach(e=>{S.cards.push({id:e.id,t:e.t,i:e.i,n:e.n,line:null,v:0});ch=true});
   S.cards.forEach(c=>{const v=votos.filter(x=>x.c==c.id).length;if(v!=c.v){c.v=v;ch=true}});
@@ -177,11 +179,8 @@ function viewHome(){
   <h2 style="font-size:clamp(28px,6.5vh,64px)">Ruta de Internacionalización 2027</h2>
   <p class="sub" style="font-size:clamp(14px,2.6vh,24px)">Taller de cocreación · Universidades y Secretarías de Educación · Estudiantes rurales</p></div>
   <div class="grid">${[["📚","Identificar oportunidades","Cada universidad aporta estrategias, recursos y experiencias."],["🧩","Agrupar y priorizar","Organizamos las ideas en líneas estratégicas y votamos."],["🛠️","Diseñar las acciones","Equipos mixtos llenan la matriz de la Ruta."],["🤝","Validar compromisos","Plenaria: coincidencias, líderes y acuerdos."]].map((m,k)=>`<div class="panel g" style="--c:${COLORS[k]};text-align:center"><div style="font-size:44px">${m[0]}</div><h3>Momento ${k+1}</h3><b>${m[1]}</b><p class="sub" style="margin:6px 0 0">${m[2]}</p></div>`).join("")}</div>
-  <p style="text-align:center;margin:3vh 0 1vh"><button class="btn alt" style="font-size:clamp(16px,3vh,22px);padding:1.4vh 32px" onclick="go(1)">Comenzar →</button></p>
-  <p style="text-align:center;margin:0"><button class="btn ghost" style="font-size:12px;padding:6px 14px;opacity:.6" onclick="reset()">Reiniciar taller (borra todo)</button></p>`;
+  <p style="text-align:center;margin:3vh 0 1vh"><button class="btn alt" style="font-size:clamp(16px,3vh,22px);padding:1.4vh 32px" onclick="go(1)">Comenzar →</button></p>`;
 }
-function reset(){if(!confirm("¿Borrar todos los datos del taller?"))return;
-  post({accion:"limpiar"}).catch(()=>{}).finally(()=>{localStorage.removeItem(KEY);location.reload()})}
 function viewEnd(){
   $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">🎉</div><h2 style="font-size:clamp(32px,6vw,60px)">¡Gracias por construir la Ruta 2027!</h2>
   <p class="sub" style="font-size:20px">Esto es lo que logramos hoy</p></div>
