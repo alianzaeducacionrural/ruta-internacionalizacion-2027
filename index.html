@@ -139,7 +139,7 @@ if(!PHONE)setInterval(async()=>{try{
   if(!ep&&!r.ts&&S.ts&&Date.now()-S.ts>30000){localStorage.removeItem(KEY);S={...vacio};render();return}
   if(r.ts>(S.ts||0)){S=r;ch=true}
   inbox.filter(e=>!S.cards.some(c=>c.id==e.id)).forEach(e=>{S.cards.push({id:e.id,t:e.t,i:e.i,n:e.n,line:null,v:0});ch=true});
-  S.cards.forEach(c=>{const v=votos.filter(x=>x.c==c.id).length;if(v!=c.v){c.v=v;ch=true}});
+  S.cards.forEach(c=>{const v=votos.filter(x=>x.c==c.id).length+(c.m||0);if(v!=c.v){c.v=v;ch=true}});
   matriz.filter(m=>!S.actions.some(a=>a.id==m.id)).forEach(m=>{S.actions.push({...m,ok:false});ch=true});
   if(ch)save();
 }catch(e){}},5000);
@@ -218,7 +218,9 @@ function viewM1(){
 const LONG=140;
 const noteBody=c=>`${c.n?`<div style="font-weight:800">${esc(c.n)}</div>`:""}<small style="margin:0 0 8px">${esc(c.i)}</small><div class="txt">${esc(c.t)}</div>${c.t.length>LONG?`<button class="more" onclick="openNote('${c.id}')">Ver más</button>`:""}`;
 // En el Momento 1 la tarjeta completa abre el modal con el aporte; en el 2 se arrastra.
-const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" ${S.step==1?`onclick="openNote('${c.id}')" title="Clic para ver completo"`:""} style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]};${S.step==1?"cursor:pointer":""}">${noteBody(c)}${S.step==2?`<span class="vote">⭐ ${c.v||0}</span>`:""}</div>`;
+const noteHtml=c=>`<div class="note" draggable="true" ondragstart="event.dataTransfer.setData('t','${c.id}')" ${S.step==1?`onclick="openNote('${c.id}')" title="Clic para ver completo"`:""} style="background:${NOTE_COLORS[INST.indexOf(c.i)%9]};${S.step==1?"cursor:pointer":""}">${noteBody(c)}${S.step==2?`<span class="vote">⭐ ${c.v||0}</span>`:S.step==1?`<span class="vote" style="cursor:pointer" title="Clic para sumar un voto" onclick="sumaVoto('${c.id}',event)">⭐ ${c.v||0} ＋</span>`:""}</div>`;
+// Votos del facilitador: se guardan aparte (c.m) para que el recuento de la hoja no los pise.
+function sumaVoto(id,e){e.stopPropagation();const c=S.cards.find(c=>c.id==id);c.m=(c.m||0)+1;c.v=(c.v||0)+1;save();render()}
 function openNote(id){const c=S.cards.find(c=>c.id==id)||DATA.inbox.find(c=>c.id==id);if(!c)return;
   $("okm").innerHTML=`<div class="panel" style="max-width:680px;width:100%;max-height:90vh;overflow:auto;border-top:10px solid ${NOTE_COLORS[INST.indexOf(c.i)%9]}" onclick="event.stopPropagation()">
   <h2 style="margin-bottom:0">${esc(c.n)||"Aporte"}</h2><span class="chip">${esc(c.i)}</span>
