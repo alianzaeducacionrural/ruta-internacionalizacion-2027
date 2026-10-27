@@ -4,53 +4,61 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ruta de Internacionalización 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--cafe:#3b2418;--crema:#fbf3e4;--verde:#2f6f4e;--oro:#e8a33d;--rojo:#c8432b;--card:#fff;--ink:#2a1a12}
-@media (prefers-color-scheme:dark){:root{--crema:#1e130d;--card:#2c1d14;--ink:#f6ead6}}
+:root{--bg:#f7f5ff;--ink:#1d1550;--prim:#6c3cff;--rosa:#ff5fb2;--coral:#ff4f6d;--sol:#ffc61a;--menta:#00c9a7;--cielo:#1e90ff;--noche:#1d1550;--card:#fff;--sombra:0 8px 24px #6c3cff26}
 *{box-sizing:border-box}
-body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:var(--crema);color:var(--ink)}
-header{background:linear-gradient(120deg,var(--cafe),#6b3f26 60%,var(--verde));color:#fff;padding:18px 24px}
-header h1{margin:0;font-size:clamp(20px,3vw,32px)} header p{margin:4px 0 0;opacity:.85}
-nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 24px;position:sticky;top:0;background:var(--crema);z-index:5;align-items:center;border-bottom:1px solid #0002}
-nav button{border:0;border-radius:999px;padding:10px 16px;font-weight:600;cursor:pointer;background:#0001;color:var(--ink)}
-nav button.on{background:var(--oro);color:#2a1a12;transform:scale(1.06);box-shadow:0 4px 12px #0003}
-#clock{position:fixed;right:16px;bottom:16px;z-index:9;background:var(--cafe);color:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 6px 20px #0006;min-width:210px;text-align:center}
-#clock.low{background:var(--rojo);animation:pulse 1s infinite}
-@keyframes pulse{50%{transform:scale(1.05)}}
-#tm{font:800 44px ui-monospace,monospace;display:block}
+body{margin:0;font-family:"Poppins","Segoe UI",system-ui,sans-serif;color:var(--ink);min-height:100vh;
+  background:radial-gradient(900px 520px at 0 0,#e2d9ff,transparent),radial-gradient(800px 520px at 100% 10%,#cff7ec,transparent),radial-gradient(800px 600px at 50% 100%,#ffe0ea,transparent),var(--bg);background-attachment:fixed}
+header{position:relative;overflow:hidden;background:linear-gradient(115deg,var(--prim),var(--rosa) 60%,var(--coral));color:#fff;padding:22px 28px}
+header:before,header:after{content:"";position:absolute;border-radius:50%;background:#ffffff26}
+header:before{width:220px;height:220px;right:-40px;top:-90px}header:after{width:120px;height:120px;right:180px;bottom:-70px;background:#ffc61a55}
+header h1{margin:0;font-size:clamp(22px,3.4vw,38px);font-weight:800;position:relative}header p{margin:4px 0 0;opacity:.92;position:relative}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 28px;position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(10px);z-index:5;align-items:center;box-shadow:0 2px 14px #6c3cff1f}
+nav button{border:0;border-radius:999px;padding:9px 16px;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer;background:#ece8ff;color:var(--prim);transition:.2s}
+nav button:hover{transform:translateY(-2px)}
+nav button.on{background:linear-gradient(115deg,var(--prim),var(--rosa));color:#fff;transform:scale(1.07);box-shadow:0 6px 16px #6c3cff55}
+#clock{position:fixed;right:16px;bottom:16px;z-index:9;background:var(--noche);color:#fff;border-radius:22px;padding:12px 16px;box-shadow:0 10px 28px #1d155077;min-width:220px;text-align:center}
+#clock.low{background:var(--coral);animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+#tm{font:800 46px ui-monospace,monospace;display:block;color:var(--sol)}#clock.low #tm{color:#fff}
 #clock .opts{display:flex;gap:6px;justify-content:center;margin-top:6px}
-#clock button{border:0;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;background:var(--oro);color:#2a1a12}
-#bar{height:5px;background:var(--oro);border-radius:3px;margin-top:8px;transition:width 1s linear}
-#end{display:none;position:fixed;inset:0;z-index:20;background:#000c;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;animation:pop .4s}
+#clock button{border:0;border-radius:10px;padding:6px 11px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;background:var(--sol);color:var(--noche)}
+#bar{height:6px;background:linear-gradient(90deg,var(--menta),var(--sol));border-radius:3px;margin-top:8px;transition:width 1s linear}
+#end{display:none;position:fixed;inset:0;z-index:20;background:linear-gradient(135deg,var(--prim),var(--rosa),var(--coral));align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;animation:pop .4s;padding:20px}
 #end h1{font-size:clamp(40px,8vw,96px);margin:0}
 .slide{animation:slide .45s ease}@keyframes slide{from{opacity:0;transform:translateX(40px)}}
-#prev,#next{position:fixed;bottom:16px;z-index:9;border:0;border-radius:50%;width:56px;height:56px;font-size:24px;cursor:pointer;background:var(--verde);color:#fff;box-shadow:0 4px 14px #0005}
-#prev{left:16px}#next{left:84px}
-main{padding:20px 24px;max-width:1500px;margin:auto}
-h2{margin:0 0 4px;font-size:clamp(22px,3vw,30px)} .sub{opacity:.75;margin:0 0 16px}
-.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--verde);color:#fff}
-.btn.alt{background:var(--oro);color:#2a1a12}.btn.ghost{background:#0002;color:var(--ink)}
-input,select,textarea{font:inherit;padding:9px 10px;border-radius:8px;border:1px solid #0004;background:var(--card);color:var(--ink);width:100%}
+#prev,#next{position:fixed;bottom:16px;z-index:9;border:0;border-radius:50%;width:58px;height:58px;font-size:22px;cursor:pointer;background:linear-gradient(135deg,var(--prim),var(--rosa));color:#fff;box-shadow:0 8px 20px #6c3cff66;transition:.2s}
+#prev:hover,#next:hover{transform:scale(1.12)}
+#prev{left:16px}#next{left:88px}
+main{padding:24px 28px 110px;max-width:1500px;margin:auto}
+h2{margin:0 0 4px;font-size:clamp(24px,3.2vw,36px);font-weight:800;color:var(--prim)} .sub{opacity:.75;margin:0 0 16px}
+.btn{border:0;border-radius:999px;padding:11px 20px;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer;background:linear-gradient(115deg,var(--prim),#8f6bff);color:#fff;box-shadow:0 6px 16px #6c3cff44;transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px #6c3cff55}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.alt{background:linear-gradient(115deg,var(--sol),#ff9f1a);color:var(--noche);box-shadow:0 6px 16px #ffb30055}.btn.ghost{background:#ece8ff;color:var(--prim);box-shadow:none}
+input,select,textarea{font:inherit;padding:10px 12px;border-radius:12px;border:2px solid #ddd6ff;background:#fff;color:var(--ink);width:100%;outline:0;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 0 4px #6c3cff22}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.row>*{width:auto;flex:1 1 180px}.row .btn{flex:0 0 auto}
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
-.panel{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 3px 12px #0002}
-.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#0002;margin:2px}
-.g{border-top:8px solid var(--c)}.g h3{margin:0 0 8px;color:var(--c)}
-.note{padding:12px;border-radius:4px 14px 4px 14px;color:#2a1a12;box-shadow:2px 4px 8px #0003;margin-bottom:10px;animation:pop .35s;cursor:grab;font-size:15px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.panel{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--sombra)}
+.chip{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;background:#ece8ff;color:var(--prim);margin:2px}
+.g{border-top:10px solid var(--c)}.g h3{margin:0 0 8px;color:var(--c);font-weight:800}
+.note{padding:14px;border-radius:6px 20px 6px 20px;color:#1d1550;box-shadow:0 6px 14px #1d155030;margin-bottom:12px;animation:pop .35s;cursor:grab;font-size:15px;font-weight:500}
+.note:nth-child(even){transform:rotate(1.2deg)}.note:nth-child(odd){transform:rotate(-1deg)}
 .note small{display:block;opacity:.7;margin-top:6px;font-weight:700}
 @keyframes pop{from{transform:scale(.6) rotate(-6deg);opacity:0}}
-.cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
-.col{background:var(--card);border-radius:14px;min-height:200px;padding:10px;border-top:8px solid var(--c)}
-.col.over{outline:3px dashed var(--c)} .col h4{margin:0 0 8px;color:var(--c)}
-.vote{border:0;background:#0002;border-radius:999px;cursor:pointer;margin-top:6px;padding:3px 10px;font-weight:700}
+.cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.col{background:#ffffffd9;border-radius:22px;min-height:200px;padding:12px;border-top:10px solid var(--c);box-shadow:var(--sombra)}
+.col.over{outline:4px dashed var(--c);background:#fff} .col h4{margin:0 0 8px;color:var(--c);font-weight:800}
+.vote{border:0;background:#fff5cc;border-radius:999px;cursor:pointer;margin-top:6px;padding:4px 12px;font-weight:700;font-size:13px;font-family:inherit}
 .form{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.form .full{grid-column:1/-1}
-.st{cursor:pointer;border:0;border-radius:999px;padding:4px 12px;font-weight:700}
-.st.ok{background:var(--verde);color:#fff}.st.pend{background:var(--oro);color:#2a1a12}
-.big{font-size:44px;font-weight:800}
+.st{cursor:pointer;border:0;border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;font-family:inherit}
+.st.ok{background:var(--menta);color:#fff}.st.pend{background:var(--sol);color:var(--noche)}
+.big{font-size:48px;font-weight:800;background:linear-gradient(115deg,var(--prim),var(--rosa));-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
 </head>
 <body>
-<header><h1>☕ Ruta de Internacionalización 2027</h1><p>Taller de cocreación · Universidades y Secretarías de Educación</p></header>
+<header><h1>🌎 Ruta de Internacionalización 2027</h1><p>Taller de cocreación · Universidades y Secretarías de Educación</p></header>
 <nav id="nav"></nav>
 <main id="app"></main>
 <button id="prev" title="Anterior" onclick="go(S.step-1)">◀</button><button id="next" title="Siguiente" onclick="go(S.step+1)">▶</button>
@@ -60,11 +68,11 @@ input,select,textarea{font:inherit;padding:9px 10px;border-radius:8px;border:1px
   <button class="btn alt" style="font-size:20px" onclick="this.parentNode.style.display='none'">Continuar</button></div>
 <script>
 const INST=["Universidad de Caldas","Universidad Autónoma de Manizales","Universidad Católica de Manizales","Universidad de Manizales","UNIOC","Uniminuto","UNAD","SED - Secretaría de Educación","SEM - Secretaría de Educación"];
-const LINES=[{n:"Internacionalización del currículo",c:"#2f6f4e",e:"📚"},{n:"Competencias globales e interculturales",c:"#c8432b",e:"🌎"},{n:"Intercambio virtual y aulas espejo",c:"#2b6cb0",e:"💻"},{n:"Cooperación e innovación rural",c:"#b7791f",e:"🌱"},{n:"Movilidad y redes académicas",c:"#7b3fa0",e:"✈️"}];
-const GROUPS=[{n:"Grupo Origen",c:"#c8432b"},{n:"Grupo Cosecha",c:"#2f6f4e"},{n:"Grupo Cumbre",c:"#2b6cb0"},{n:"Grupo Raíz",c:"#b7791f"}];
+const LINES=[{n:"Internacionalización del currículo",c:"#6c3cff",e:"📚"},{n:"Competencias globales e interculturales",c:"#ff4f6d",e:"🌎"},{n:"Intercambio virtual y aulas espejo",c:"#1e90ff",e:"💻"},{n:"Cooperación e innovación rural",c:"#00b894",e:"🌱"},{n:"Movilidad y redes académicas",c:"#ff9f1a",e:"✈️"}];
+const GROUPS=[{n:"Grupo Origen",c:"#ff4f6d"},{n:"Grupo Cosecha",c:"#00b894"},{n:"Grupo Cumbre",c:"#6c3cff"},{n:"Grupo Raíz",c:"#ff9f1a"}];
 const STEPS=[{t:"🏠 Inicio"},{t:"👥 Grupos"},{t:"1 · Identificar"},{t:"2 · Agrupar"},{t:"3 · Diseñar"},{t:"4 · Validar"},{t:"🎉 Cierre"}];
 const PROD=[null,null,"Banco de oportunidades institucionales","Líneas estratégicas priorizadas","Borrador de la Ruta de Internacionalización 2027","Acuerdos iniciales y responsables"];
-const NOTE_COLORS=["#ffe08a","#b8e6c1","#ffc2b0","#bcd9f5","#e3c6f2","#ffd3a8","#c9f0e8","#f6e0a4","#d4e8a8"];
+const NOTE_COLORS=["#ffe066","#8cf0d6","#ffb3c6","#a5d8ff","#d0bfff","#ffc999","#b2f2bb","#fff3a3","#ffa8d6"];
 const KEY="ruta2027";
 const PHONE=location.search.includes("celular");
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||{step:0,people:[],groups:[],cards:[],actions:[]};
@@ -121,12 +129,12 @@ function demo(){
 function render(){
   $("nav").innerHTML=STEPS.map((s,i)=>`<button class="${i==S.step?"on":""}" onclick="go(${i})">${s.t}</button>`).join("");
   [viewHome,viewGroups,viewM1,viewM2,viewM3,viewM4,viewEnd][S.step]();
-  const sub=document.querySelector(".sub");if(sub&&PROD[S.step])sub.insertAdjacentHTML("afterend",`<p><span class="chip" style="background:var(--oro);color:#2a1a12;font-size:14px">🎯 Producto: ${PROD[S.step]}</span></p>`);
+  const sub=document.querySelector(".sub");if(sub&&PROD[S.step])sub.insertAdjacentHTML("afterend",`<p><span class="chip" style="background:var(--sol);color:#1d1550;font-size:14px">🎯 Producto: ${PROD[S.step]}</span></p>`);
   $("prev").style.visibility=S.step?"visible":"hidden";$("next").style.visibility=S.step<STEPS.length-1?"visible":"hidden";
 }
 
 function viewHome(){
-  $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">☕🌎</div>
+  $("app").innerHTML=`<div style="text-align:center;padding:4vh 0"><div style="font-size:72px">🌎✨</div>
   <h2 style="font-size:clamp(32px,6vw,64px)">Ruta de Internacionalización 2027</h2>
   <p class="sub" style="font-size:clamp(16px,2.2vw,24px)">Taller de cocreación · Universidades y Secretarías de Educación · Estudiantes rurales</p></div>
   <div class="grid">${[["📚","Identificar oportunidades","Cada universidad aporta estrategias, recursos y experiencias."],["🧩","Agrupar y priorizar","Organizamos las ideas en líneas estratégicas y votamos."],["🛠️","Diseñar las acciones","Equipos mixtos llenan la matriz de la Ruta."],["🤝","Validar compromisos","Plenaria: coincidencias, líderes y acuerdos."]].map((m,k)=>`<div class="panel g" style="--c:${LINES[k].c};text-align:center"><div style="font-size:44px">${m[0]}</div><h3>Momento ${k+1}</h3><b>${m[1]}</b><p class="sub" style="margin:6px 0 0">${m[2]}</p></div>`).join("")}</div>
