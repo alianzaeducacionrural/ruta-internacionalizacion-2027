@@ -10,10 +10,11 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:"Poppins","Segoe UI",system-ui,sans-serif;color:var(--ink);min-height:100vh;
   background:radial-gradient(900px 520px at 0 0,#e2d9ff,transparent),radial-gradient(800px 520px at 100% 10%,#cff7ec,transparent),radial-gradient(800px 600px at 50% 100%,#ffe0ea,transparent),var(--bg);background-attachment:fixed}
-header{position:relative;overflow:hidden;background:linear-gradient(115deg,var(--prim),var(--rosa) 60%,var(--coral));color:#fff;padding:12px 28px}
-header:before,header:after{content:"";position:absolute;border-radius:50%;background:#ffffff26}
-header:before{width:220px;height:220px;right:-40px;top:-90px}header:after{width:120px;height:120px;right:180px;bottom:-70px;background:#ffc61a55}
-header h1{margin:0;font-size:clamp(20px,2.4vw,30px);font-weight:800;position:relative}header p{margin:2px 0 0;font-size:14px;opacity:.92;position:relative}
+/* Encabezado claro: fondo blanco y una franja de colores abajo, uno por cada línea estratégica */
+header{position:relative;overflow:hidden;background:#fff;color:var(--noche);padding:12px 28px 16px;box-shadow:0 4px 18px #6c3cff1f}
+header:before{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#6c3cff 0 20%,#ff4f6d 20% 40%,#1e90ff 40% 60%,#00b894 60% 80%,#ff9f1a 80% 100%)}
+header:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-60px;top:-140px;background:#ffc61a33}
+header h1{margin:0;font-size:clamp(20px,2.4vw,30px);font-weight:800;position:relative;color:var(--prim)}header p{margin:2px 0 0;font-size:14px;opacity:.75;position:relative}
 nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 28px;position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(10px);z-index:5;align-items:center;box-shadow:0 2px 14px #6c3cff1f}
 nav button{border:0;border-radius:999px;padding:9px 16px;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer;background:#ece8ff;color:var(--prim);transition:.2s}
 nav button:hover{transform:translateY(-2px)}
@@ -44,6 +45,7 @@ input,select,textarea{font:inherit;padding:10px 12px;border-radius:12px;border:2
 input:focus,select:focus,textarea:focus{border-color:var(--prim);box-shadow:0 0 0 4px #6c3cff22}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.row>*{width:auto;flex:1 1 180px}.row .btn{flex:0 0 auto}
 .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.grid.f{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}/* listas de notas: una nota sola no se estira a todo el ancho */
 .panel{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--sombra)}
 .chip{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;background:#ece8ff;color:var(--prim);margin:2px}
 .g{border-top:10px solid var(--c)}.g h3{margin:0 0 8px;color:var(--c);font-weight:800}
@@ -182,7 +184,7 @@ const withQr=(left,url,titulo)=>`<div style="display:flex;gap:16px;align-items:f
 function viewM1(){
   $("app").innerHTML=withQr(`<h2>Momento 1 · Identificar oportunidades</h2><p class="sub">¿Qué estrategias, recursos o experiencias de internacionalización puede aportar tu institución? (aulas espejo, clases con docentes extranjeros, idiomas, redes…)</p>`,PHONE_URL,"📱 Participa desde tu celular")+`
   <div class="big" style="font-size:34px">${S.cards.length} <span style="font-size:18px;font-weight:600;color:var(--ink);-webkit-text-fill-color:var(--ink)">oportunidades</span></div>
-  <div class="grid">${S.cards.map(noteHtml).join("")}</div>`;
+  <div class="grid f">${S.cards.map(noteHtml).join("")}</div>`;
 }
 // Contenido de una nota: primero quién (nombre e institución), luego el texto recortado con "Ver más" si es largo.
 const LONG=140;
@@ -197,7 +199,7 @@ function openNote(id){const c=S.cards.find(c=>c.id==id)||DATA.inbox.find(c=>c.id
 function viewM2(){
   const pool=S.cards.filter(c=>c.line==null);
   $("app").innerHTML=`<h2>Momento 2 · Agrupar y priorizar</h2><p class="sub">Arrastra cada nota a su línea estratégica. Los participantes votan desde su celular (${MAX_VOTOS} votos c/u) por las ideas que sirvan a estudiantes rurales, sean viables en 2027 y reúnan varias instituciones.</p>
-  <div class="col" style="--c:#888;margin-bottom:14px" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,null)"><h4>Sin clasificar (${pool.length})</h4><div class="grid">${pool.map(noteHtml).join("")}</div></div>
+  <div class="col" style="--c:#888;margin-bottom:14px" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,null)"><h4>Sin clasificar (${pool.length})</h4><div class="grid f">${pool.map(noteHtml).join("")}</div></div>
   <div class="cols">${LINES.map((l,k)=>`<div class="col" style="--c:${l.c}" ondragover="dov(event)" ondragleave="this.classList.remove('over')" ondrop="drop(event,${k})"><h4>${l.e} ${l.n}</h4>${S.cards.filter(c=>c.line===k).sort((a,b)=>b.v-a.v).map(noteHtml).join("")}</div>`).join("")}</div>`;
 }
 function dov(e){e.preventDefault();e.currentTarget.classList.add("over")}
@@ -217,7 +219,7 @@ function viewM4(){
   $("app").innerHTML=`<h2>Momento 4 · Validar compromisos</h2><p class="sub">Plenaria: cada grupo presenta sus acciones. Haz clic en una tarjeta para ver toda la información que registraron.</p>
   <div class="row"><span class="chip">${S.actions.length} acciones</span></div>
   ${LINES.map((l,k)=>{const A=S.actions.filter(a=>a.line==k);return`<div class="panel g" style="--c:${l.c};margin-bottom:14px"><h3>${l.e} ${l.n} (${A.length})</h3>
-  <div class="grid">${A.map(a=>`<div class="note" style="background:#fff;border-left:8px solid ${GROUPS[a.g].c};border-radius:12px;cursor:pointer;transform:none" onclick="openA('${a.id}')">
+  <div class="grid f">${A.map(a=>`<div class="note" style="background:#fff;border-left:8px solid ${GROUPS[a.g].c};border-radius:12px;cursor:pointer;transform:none" onclick="openA('${a.id}')">
   <span class="chip" style="background:${GROUPS[a.g].c};color:#fff">${GROUPS[a.g].n}</span><div style="margin-top:6px;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${esc(a.a)}</div>
   <small>🏛️ ${esc(a.l)||"Sin institución líder"}</small></div>`).join("")||"<small>Sin acciones aún</small>"}</div></div>`}).join("")}`;
 }
